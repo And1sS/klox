@@ -1,7 +1,8 @@
 package lexer
 
+private val lineBreakRegex = Regex("\\r?\\n")
 fun tokenize(source: String): List<Token> =
-    source.split(Regex("\\r?\\n"))
+    source.split(lineBreakRegex)
         .flatMapIndexed(::tokenizeLine)
 
 private data class ParsingContext(
@@ -101,7 +102,7 @@ private fun parseLiteral(parsingContext: ParsingContext): Token {
     return tryParseIdentifier(parsingContext)
 }
 
-val numberLiteralRegex = Regex("(\\d+\\.?\\d+|\\d)")
+private val numberLiteralRegex = Regex("(\\d+\\.?\\d+|\\d)")
 private fun tryParseNumberLiteral(parsingContext: ParsingContext): Token {
     val numberLiteral: String = firstGroup(parsingContext.remainingString, numberLiteralRegex)?.value
         ?: return Unmatched(parsingContext.position)
@@ -109,7 +110,7 @@ private fun tryParseNumberLiteral(parsingContext: ParsingContext): Token {
     return NumberLiteral(numberLiteral.toDouble(), numberLiteral.length, parsingContext.position)
 }
 
-val stringLiteralRegex = Regex("(\"[^\"]*\")")
+private val stringLiteralRegex = Regex("(\"[^\"]*\")")
 private fun tryParseStringLiteral(parsingContext: ParsingContext): Token {
     val stringLiteral: String = firstGroup(parsingContext.remainingString, stringLiteralRegex)?.value
         ?: return Unmatched(parsingContext.position)
@@ -117,7 +118,7 @@ private fun tryParseStringLiteral(parsingContext: ParsingContext): Token {
     return StringLiteral(stringLiteral, parsingContext.position)
 }
 
-val identifierRegex = Regex("([_a-zA-Z]+[_a-zA-Z0-9]*)")
+private val identifierRegex = Regex("([_a-zA-Z]+[_a-zA-Z0-9]*)")
 private fun tryParseIdentifier(parsingContext: ParsingContext): Token {
     val identifier: String = firstGroup(parsingContext.remainingString, identifierRegex)?.value
         ?: return Unmatched(parsingContext.position)
