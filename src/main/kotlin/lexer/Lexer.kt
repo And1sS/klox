@@ -32,20 +32,6 @@ private fun tokenizeLine(lineNumber: Int, line: String): List<Token> {
     }
 }
 
-private val whitespacesCommentsRegex = Regex("([\\s\\t]+(?://.*)?)")
-
-@OptIn(ExperimentalStdlibApi::class)
-private fun skipWhitespacesAndComments(parsingContext: ParsingContext): ParsingContext {
-    val matchingResult = whitespacesCommentsRegex.matchAt(parsingContext.remainingString, 0)
-    val skippedChars = (matchingResult?.groups?.get(0)?.range?.last ?: -1) + 1
-
-    return if (skippedChars == 0)
-        parsingContext
-    else
-        parsingContext.skipChars(skippedChars)
-}
-
-
 private fun nextToken(parsingContext: ParsingContext): Pair<Token, ParsingContext> {
     val withoutWhitespacesAndComments = skipWhitespacesAndComments(parsingContext)
     val (source, position) = withoutWhitespacesAndComments
@@ -91,10 +77,55 @@ private fun nextToken(parsingContext: ParsingContext): Pair<Token, ParsingContex
         source.startsWith("var") -> Var(position)
         source.startsWith("while") -> While(position)
 
-        // TODO: identifier, string literal, number literal
-
-        else -> Unmatched(position)
+        else -> parseLiteral(withoutWhitespacesAndComments)
     }
 
     return Pair(token, withoutWhitespacesAndComments.skipChars(token.length))
 }
+
+private val whitespacesCommentsRegex = Regex("([\\s\\t]+(?://.*)?)")
+private fun skipWhitespacesAndComments(parsingContext: ParsingContext): ParsingContext {
+    val matchEndIndex = firstGroup(parsingContext.remainingString, whitespacesCommentsRegex)?.value?.length
+        ?: return parsingContext
+
+    return parsingContext.skipChars(matchEndIndex)
+}
+
+private fun parseLiteral(parsingContext: ParsingContext): Token {
+    val asNumberLiteral = tryParseNumberLiteral(parsingContext)
+    if (asNumberLiteral is NumberLiteral) return asNumberLiteral
+
+    val asStringLiteral = tryParseStringLiteral(parsingContext)
+    if (asStringLiteral is StringLiteral) return asStringLiteral
+
+    return tryParseIdentifier(parsingContext)
+}
+
+val numberLiteralRegex = Regex("(\\d+\\.?\\d+|\\d)")
+private fun tryParseNumberLiteral(parsingContext: ParsingContext): Token {
+    val numberLiteral: String = firstGroup(parsingContext.remainingString, numberLiteralRegex)?.value
+        ?: return Unmatched(parsingContext.position)
+
+    return NumberLiteral(numberLiteral.toDouble(), numberLiteral.length, parsingContext.position)
+}
+
+val stringLiteralRegex = Regex("(\"[^\"]*\")")
+private fun tryParseStringLiteral(parsingContext: ParsingContext): Token {
+    val stringLiteral: String = firstGroup(parsingContext.remainingString, stringLiteralRegex)?.value
+        ?: return Unmatched(parsingContext.position)
+
+    return StringLiteral(stringLiteral, parsingContext.position)
+}
+
+val identifierRegex = Regex("([_a-zA-Z]+[_a-zA-Z0-9]*)")
+private fun tryParseIdentifier(parsingContext: ParsingContext): Token {
+    val identifier: String = firstGroup(parsingContext.remainingString, identifierRegex)?.value
+        ?: return Unmatched(parsingContext.position)
+
+    return Identifier(identifier, parsingContext.position)
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+private fun firstGroup(value: String, regex: Regex): MatchGroup? =
+    regex.matchAt(value, 0)?.groups?.get(0)
+
