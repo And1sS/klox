@@ -4,6 +4,7 @@ private val lineBreakRegex = Regex("\\r?\\n")
 fun tokenize(source: String): List<LexerToken> =
     source.split(lineBreakRegex)
         .flatMapIndexed(::tokenizeLine)
+        .let { it.plusElement(EndOfLineLexerToken(it.last().position.nextLine())) }
 
 private data class LexingContext(
     val remainingString: String,
@@ -22,9 +23,9 @@ private fun tokenizeLine(lineNumber: Int, line: String): List<LexerToken> {
 
     while (true) {
         val (currentToken, nextContext) = nextToken(currentContext)
-        if (currentToken is EndOfLine) {
+        if (currentToken is EndOfLineLexerToken) {
             return result
-        } else if (currentToken is Unmatched) {
+        } else if (currentToken is UnmatchedLexerToken) {
             throw RuntimeException("Unmatched token on position: ${currentToken.position}")
         }
 
@@ -38,28 +39,28 @@ private fun nextToken(lexingContext: LexingContext): Pair<LexerToken, LexingCont
     val (source, position) = withoutWhitespacesAndComments
 
     val token: LexerToken = when {
-        source.isEmpty() -> EndOfLine(position)
-        source.startsWith("(") -> LeftParen(position)
-        source.startsWith(")") -> RightParen(position)
-        source.startsWith("{") -> LeftBrace(position)
-        source.startsWith("}") -> RightBrace(position)
-        source.startsWith(",") -> Comma(position)
-        source.startsWith(".") -> Dot(position)
-        source.startsWith("-") -> Minus(position)
-        source.startsWith("+") -> Plus(position)
-        source.startsWith(";") -> Semicolon(position)
-        source.startsWith("/") -> Slash(position)
-        source.startsWith("*") -> Star(position)
+        source.isEmpty() -> EndOfLineLexerToken(position)
+        source.startsWith("(") -> LeftParenLexerToken(position)
+        source.startsWith(")") -> RightParenLexerToken(position)
+        source.startsWith("{") -> LeftBraceLexerToken(position)
+        source.startsWith("}") -> RightBraceLexerToken(position)
+        source.startsWith(",") -> CommaLexerToken(position)
+        source.startsWith(".") -> DotLexerToken(position)
+        source.startsWith("-") -> MinusLexerToken(position)
+        source.startsWith("+") -> PlusLexerToken(position)
+        source.startsWith(";") -> SemicolonLexerToken(position)
+        source.startsWith("/") -> SlashLexerToken(position)
+        source.startsWith("*") -> StarLexerToken(position)
 
-        source.startsWith("!=") -> BangEqual(position)
-        source.startsWith("==") -> EqualEqual(position)
-        source.startsWith(">=") -> GreaterEqual(position)
-        source.startsWith("<=") -> LessEqual(position)
+        source.startsWith("!=") -> BangEqualLexerToken(position)
+        source.startsWith("==") -> EqualEqualLexerToken(position)
+        source.startsWith(">=") -> GreaterEqualLexerToken(position)
+        source.startsWith("<=") -> LessEqualLexerToken(position)
 
-        source.startsWith("!") -> Bang(position)
-        source.startsWith("=") -> Equal(position)
-        source.startsWith(">") -> Greater(position)
-        source.startsWith("<") -> Less(position)
+        source.startsWith("!") -> BangLexerToken(position)
+        source.startsWith("=") -> EqualLexerToken(position)
+        source.startsWith(">") -> GreaterLexerToken(position)
+        source.startsWith("<") -> LessLexerToken(position)
 
         else -> parseLiteral(withoutWhitespacesAndComments)
     }
@@ -76,32 +77,33 @@ private fun skipWhitespacesAndComments(lexingContext: LexingContext): LexingCont
 }
 
 private val keywordsMap = mapOf<String, (Position) -> LexerToken>(
-    "and" to ::And,
-    "class" to ::Class,
-    "else" to ::Else,
-    "false" to ::False,
-    "fun" to ::Fun,
-    "for" to ::For,
-    "if" to ::If,
-    "nil" to ::Nil,
-    "or" to ::Or,
-    "print" to ::Print,
-    "return" to ::Return,
-    "super" to ::Super,
-    "this" to ::This,
-    "true" to ::True,
-    "var" to ::Var,
-    "while" to ::While,
+    "and" to ::AndLexerToken,
+    "class" to ::ClassLexerToken,
+    "else" to ::ElseLexerToken,
+    "false" to ::FalseLexerToken,
+    "fun" to ::FunLexerToken,
+    "for" to ::ForLexerToken,
+    "if" to ::IfLexerToken,
+    "nil" to ::NilLexerToken,
+    "or" to ::OrLexerToken,
+    "print" to ::PrintLexerToken,
+    "return" to ::ReturnLexerToken,
+    "super" to ::SuperLexerToken,
+    "this" to ::ThisLexerToken,
+    "true" to ::TrueLexerToken,
+    "var" to ::VarLexerToken,
+    "while" to ::WhileLexerToken,
 )
+
 private fun parseLiteral(lexingContext: LexingContext): LexerToken {
     val asNumberLiteral = tryParseNumberLiteral(lexingContext)
-    if (asNumberLiteral is NumberLiteral) return asNumberLiteral
+    if (asNumberLiteral is NumberLiteralLexerToken) return asNumberLiteral
 
     val asStringLiteral = tryParseStringLiteral(lexingContext)
-    if (asStringLiteral is StringLiteral) return asStringLiteral
+    if (asStringLiteral is StringLiteralLexerToken) return asStringLiteral
 
     val asIdentifier = tryParseIdentifier(lexingContext)
-    if (asIdentifier !is Identifier) return asIdentifier
+    if (asIdentifier !is IdentifierLexerToken) return asIdentifier
 
     return keywordsMap[asIdentifier.name]?.invoke(lexingContext.position) ?: asIdentifier
 }
@@ -109,25 +111,25 @@ private fun parseLiteral(lexingContext: LexingContext): LexerToken {
 private val numberLiteralRegex = Regex("(\\d+(?:\\.\\d+)?)")
 private fun tryParseNumberLiteral(lexingContext: LexingContext): LexerToken {
     val numberLiteral: String = firstMatch(lexingContext.remainingString, numberLiteralRegex)
-        ?: return Unmatched(lexingContext.position)
+        ?: return UnmatchedLexerToken(lexingContext.position)
 
-    return NumberLiteral(numberLiteral.toDouble(), numberLiteral.length, lexingContext.position)
+    return NumberLiteralLexerToken(numberLiteral.toDouble(), numberLiteral.length, lexingContext.position)
 }
 
 private val stringLiteralRegex = Regex("\"([^\"]*)\"")
 private fun tryParseStringLiteral(lexingContext: LexingContext): LexerToken {
     val stringLiteral: String = firstMatch(lexingContext.remainingString, stringLiteralRegex)
-        ?: return Unmatched(lexingContext.position)
+        ?: return UnmatchedLexerToken(lexingContext.position)
 
-    return StringLiteral(stringLiteral, lexingContext.position)
+    return StringLiteralLexerToken(stringLiteral, lexingContext.position)
 }
 
 private val identifierRegex = Regex("([_a-zA-Z]\\w*)")
 private fun tryParseIdentifier(lexingContext: LexingContext): LexerToken {
     val identifier: String = firstMatch(lexingContext.remainingString, identifierRegex)
-        ?: return Unmatched(lexingContext.position)
+        ?: return UnmatchedLexerToken(lexingContext.position)
 
-    return Identifier(identifier, lexingContext.position)
+    return IdentifierLexerToken(identifier, lexingContext.position)
 }
 
 @OptIn(ExperimentalStdlibApi::class)

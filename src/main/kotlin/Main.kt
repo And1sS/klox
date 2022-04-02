@@ -1,20 +1,18 @@
 import lexer.tokenize
+import parser.grammar
+import parser.toParsingContext
 
 fun main() {
     tokenize(
-        """
-            class Breakfast {
-              cook() {
-                print "Eggs a-fryin'!";
-              }
-            
-              serve(who) {
-                print "Enjoy your breakfast, " + who + ".";
-              }
-            }
-        """.trimIndent().also(::println)
+        """!1 + (- 2) * (6 + 5) > 15"""
+            .trimIndent()
+            .also(::println)
     ).also(::println)
+        .toParsingContext()
+        .let { grammar.match(it) }
+        .also(::println)
 }
+
 
 
 
