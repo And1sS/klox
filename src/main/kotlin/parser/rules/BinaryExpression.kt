@@ -1,15 +1,11 @@
 import parser.BinaryOperatorExpression
 import parser.Expression
-import parser.Matched
 import parser.MatchResult
+import parser.Matched
 import parser.MultipleParserToken
-import parser.OperatorType
-import parser.ParserToken
 import parser.Rule
-import parser.SingleParserToken
 import parser.Unmatched
 import parser.andRule
-import parser.operatorMapping
 import parser.toOperatorTypeAndOperand
 import parser.zeroOrMoreRule
 

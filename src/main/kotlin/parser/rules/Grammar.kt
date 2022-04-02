@@ -73,6 +73,7 @@ private val intermediateUnaryRule = Rule { ctx ->
         tokens.toOperatorTypeAndOperand().let { UnaryOperatorExpression(it.first, it.second) }
     }.match(ctx)
 }
+
 // unaryOperator -> ( "!" | "-" ) unaryOperator | primaryExpression
 private val unaryOperatorRule: Rule = orRule(intermediateUnaryRule, primaryExpressionRule)
 
@@ -90,9 +91,3 @@ private val comparisonRule: Rule = binaryOperatorRule(
 
 // equality -> comparison ( ( "!=" | "==" ) comparison )*
 private val equalityRule: Rule = binaryOperatorRule(comparisonRule, orRule(bangEqualRule, equalEqualRule))
-
-
-
-
-
-

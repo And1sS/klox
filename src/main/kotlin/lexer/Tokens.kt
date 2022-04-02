@@ -35,7 +35,9 @@ class LessLexerToken(position: Position) : LexerToken(position, 1)
 class LessEqualLexerToken(position: Position) : LexerToken(position, 2)
 
 class IdentifierLexerToken(val name: String, position: Position) : LexerToken(position, name.length)
-class StringLiteralLexerToken(val value: String, position: Position) : LexerToken(position, value.length + 2) // Length with quotes
+class StringLiteralLexerToken(val value: String, position: Position) :
+    LexerToken(position, value.length + 2) // Length with quotes
+
 class NumberLiteralLexerToken(val value: Double, length: Int, position: Position) : LexerToken(position, length)
 
 class AndLexerToken(position: Position) : LexerToken(position, 3)

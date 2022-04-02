@@ -1,14 +1,14 @@
 package parser
 
 import lexer.BangEqualLexerToken
-import lexer.IdentifierLexerToken
-import lexer.LexerToken
 import lexer.BangLexerToken
 import lexer.EqualEqualLexerToken
 import lexer.GreaterEqualLexerToken
 import lexer.GreaterLexerToken
+import lexer.IdentifierLexerToken
 import lexer.LessEqualLexerToken
 import lexer.LessLexerToken
+import lexer.LexerToken
 import lexer.MinusLexerToken
 import lexer.PlusLexerToken
 import lexer.SlashLexerToken

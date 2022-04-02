@@ -94,6 +94,7 @@ private val keywordsMap = mapOf<String, (Position) -> LexerToken>(
     "var" to ::VarLexerToken,
     "while" to ::WhileLexerToken,
 )
+
 private fun parseLiteral(lexingContext: LexingContext): LexerToken {
     val asNumberLiteral = tryParseNumberLiteral(lexingContext)
     if (asNumberLiteral is NumberLiteralLexerToken) return asNumberLiteral
