@@ -3,19 +3,16 @@ import lexer.tokenize
 fun main() {
     tokenize(
         """
-            fun () {
-              var = ;
-
-              fun () {
-                print ;
+            class Breakfast {
+              cook() {
+                print "Eggs a-fryin'!";
               }
-
-              return ;
+            
+              serve(who) {
+                print "Enjoy your breakfast, " + who + ".";
+              }
             }
-
-            var  = ();
-            ();
-        """.trimIndent()
+        """.trimIndent().also(::println)
     ).also(::println)
 }
 
