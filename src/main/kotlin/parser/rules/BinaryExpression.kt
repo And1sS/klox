@@ -1,8 +1,9 @@
 import parser.BinaryOperatorExpression
+import parser.CompositeToken
 import parser.Expression
 import parser.MatchResult
 import parser.Matched
-import parser.MultipleParserToken
+import parser.NodeToken
 import parser.Rule
 import parser.Unmatched
 import parser.andRule
@@ -17,11 +18,11 @@ fun binaryOperatorRule(operandRule: Rule, operatorRule: Rule): Rule = Rule { ctx
 }
 
 private fun combineBinaryOperatorResult(matched: Matched): MatchResult {
-    require(matched.token is MultipleParserToken) {
+    require(matched.token is CompositeToken) {
         "Critical error: this branch shouldn't have been reached"
     }
-    val tokens = matched.token.parserTokens
-    var processed: Expression = tokens[0] as? Expression
+    val tokens = matched.token.tokens
+    var processed: Expression = (tokens[0] as? NodeToken)?.node as? Expression
         ?: throw RuntimeException("Invalid grammar: operator argument is not an expression")
 
     tokens
@@ -32,7 +33,7 @@ private fun combineBinaryOperatorResult(matched: Matched): MatchResult {
             processed = BinaryOperatorExpression(type, processed, operand)
         }
 
-    return Matched(processed, matched.newCtx)
+    return Matched(NodeToken(processed), matched.newCtx)
 }
 
 

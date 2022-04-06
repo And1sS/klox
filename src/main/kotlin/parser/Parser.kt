@@ -14,19 +14,26 @@ data class ParsingContext(val tokens: List<LexerToken>, val currentIndex: Int) {
 fun List<LexerToken>.toParsingContext(): ParsingContext =
     ParsingContext(this, 0)
 
+sealed class ParserToken
+
+data class SymbolicToken(val lexerToken: LexerToken) : ParserToken()
+data class NodeToken(val node: AbstractSyntaxNode) : ParserToken()
+data class CompositeToken(val tokens: List<ParserToken>) : ParserToken()
+
 sealed class MatchResult
 data class Matched(val token: ParserToken, val newCtx: ParsingContext) : MatchResult()
 object Unmatched : MatchResult()
 
-fun interface Rule {
-    fun match(ctx: ParsingContext): MatchResult
-}
 typealias Combiner = (tokens: List<ParserToken>) -> ParserToken
 
 val flatteningCombiner: Combiner = { tokens ->
     tokens
-        .flatMap { if (it is MultipleParserToken) it.parserTokens else listOf(it) }
-        .let { MultipleParserToken(it) }
+        .flatMap { if (it is CompositeToken) it.tokens else listOf(it) }
+        .let { CompositeToken(it) }
+}
+
+fun interface Rule {
+    fun match(ctx: ParsingContext): MatchResult
 }
 
 fun orRule(vararg rules: Rule): Rule = Rule { ctx ->
@@ -39,7 +46,7 @@ fun orRule(vararg rules: Rule): Rule = Rule { ctx ->
     Unmatched
 }
 
-private fun andRule(rules: List<Rule>, combine: Combiner): Rule = Rule { ctx ->
+fun andRule(vararg rules: Rule, combine: Combiner): Rule = Rule { ctx ->
     val matcherResults = mutableListOf<ParserToken>()
     var curCtx = ctx
 
@@ -56,19 +63,15 @@ private fun andRule(rules: List<Rule>, combine: Combiner): Rule = Rule { ctx ->
     Matched(combine(matcherResults), curCtx)
 }
 
-fun andRule(vararg rules: Rule, combine: Combiner): Rule =
-    andRule(rules.toList(), combine)
-
 fun andRule(vararg rules: Rule): Rule =
-    andRule(rules.toList(), flatteningCombiner)
+    andRule(*rules) { flatteningCombiner(it) }
 
 fun zeroOrMoreRule(combine: Combiner, rule: Rule): Rule = Rule { ctx ->
     val matcherResults = mutableListOf<ParserToken>()
     var curCtx = ctx
 
     while (true) {
-        val result = rule.match(curCtx)
-        when (result) {
+        when (val result = rule.match(curCtx)) {
             is Unmatched -> return@Rule Matched(combine(matcherResults), curCtx)
             is Matched -> {
                 matcherResults.add(result.token)
@@ -83,8 +86,12 @@ fun zeroOrMoreRule(combine: Combiner, rule: Rule): Rule = Rule { ctx ->
 fun zeroOrMoreRule(rule: Rule): Rule =
     zeroOrMoreRule(flatteningCombiner, rule)
 
-inline fun <reified T : LexerToken> singleTokenRule(): Rule =
-    singleTokenRule<T, SingleParserToken> { SingleParserToken(it) }
+inline fun <reified T : LexerToken> symbolicTokenRule(): Rule =
+    singleTokenRule<T, SymbolicToken>(::SymbolicToken)
+
+inline fun <reified T : LexerToken> nodeTokenRule(
+    crossinline mapper: (T) -> AbstractSyntaxNode
+): Rule = singleTokenRule<T, NodeToken> { NodeToken(mapper(it)) }
 
 inline fun <reified T : LexerToken, reified R : ParserToken> singleTokenRule(
     crossinline mapper: (T) -> R

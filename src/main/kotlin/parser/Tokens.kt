@@ -13,33 +13,23 @@ import lexer.MinusLexerToken
 import lexer.PlusLexerToken
 import lexer.SlashLexerToken
 import lexer.StarLexerToken
-import lexer.StringLiteralLexerToken
 import kotlin.reflect.KClass
 
-sealed class ParserToken()
+sealed class AbstractSyntaxNode()
 
-data class SingleParserToken(val lexerToken: LexerToken) : ParserToken()
-data class MultipleParserToken(val parserTokens: List<ParserToken>) : ParserToken()
+sealed class Expression : AbstractSyntaxNode()
 
-sealed class Expression : ParserToken()
+sealed class Value : Expression()
 
-class IdentifierExpression(token: IdentifierLexerToken) : Expression() {
-    val name: String = token.name
+object NilValue : Value()
 
-    override fun toString(): String = "IdentifierExpression(name = $name)"
-}
+data class BooleanValue(val value: Boolean) : Value()
 
-class StringLiteralExpression(token: StringLiteralLexerToken) : Expression() {
-    val value: String = token.value
+data class NumericValue(val value: Double) : Value()
 
-    override fun toString(): String = "StringLiteralExpression(value = $value)"
-}
+class StringValue(val value: String) : Value()
 
-data class NumberLiteralExpression(val value: Double) : Expression()
-
-data class BooleanLiteralExpression(val value: Boolean) : Expression()
-
-object NilExpression : Expression()
+class ObjectValue() : Value()
 
 data class UnaryOperatorExpression(
     val operatorType: OperatorType,
@@ -51,6 +41,12 @@ data class BinaryOperatorExpression(
     val lhs: Expression,
     val rhs: Expression
 ) : Expression()
+
+class IdentifierExpression(token: IdentifierLexerToken) : Expression() {
+    val name: String = token.name
+
+    override fun toString(): String = "IdentifierExpression(name = $name)"
+}
 
 enum class OperatorType {
     Bang,

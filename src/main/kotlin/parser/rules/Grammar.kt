@@ -7,7 +7,6 @@ import lexer.EqualEqualLexerToken
 import lexer.FalseLexerToken
 import lexer.GreaterEqualLexerToken
 import lexer.GreaterLexerToken
-import lexer.IdentifierLexerToken
 import lexer.LeftParenLexerToken
 import lexer.LessEqualLexerToken
 import lexer.LessLexerToken
@@ -21,33 +20,30 @@ import lexer.StarLexerToken
 import lexer.StringLiteralLexerToken
 import lexer.TrueLexerToken
 
-val identifierRule =
-    singleTokenRule<IdentifierLexerToken, IdentifierExpression> { IdentifierExpression(it) }
-val stringLiteralRule =
-    singleTokenRule<StringLiteralLexerToken, StringLiteralExpression> { StringLiteralExpression(it) }
-val numberLiteralRule =
-    singleTokenRule<NumberLiteralLexerToken, NumberLiteralExpression> { NumberLiteralExpression(it.value) }
+val identifierRule = nodeTokenRule(::IdentifierExpression)
+val stringLiteralRule = nodeTokenRule<StringLiteralLexerToken> { StringValue(it.value) }
+val numberLiteralRule = nodeTokenRule<NumberLiteralLexerToken> { NumericValue(it.value) }
 
-val trueRule = singleTokenRule<TrueLexerToken, BooleanLiteralExpression> { BooleanLiteralExpression(true) }
-val falseRule = singleTokenRule<FalseLexerToken, BooleanLiteralExpression> { BooleanLiteralExpression(false) }
-val nilRule = singleTokenRule<NilLexerToken, NilExpression> { NilExpression }
+val trueRule = nodeTokenRule<TrueLexerToken> { BooleanValue(true) }
+val falseRule = nodeTokenRule<FalseLexerToken> { BooleanValue(false) }
+val nilRule = nodeTokenRule<NilLexerToken> { NilValue }
 
-val lparenRule = singleTokenRule<LeftParenLexerToken>()
-val rparenRule = singleTokenRule<RightParenLexerToken>()
+val lparenRule = symbolicTokenRule<LeftParenLexerToken>()
+val rparenRule = symbolicTokenRule<RightParenLexerToken>()
 
-val bangRule: Rule = singleTokenRule<BangLexerToken>()
-val plusRule: Rule = singleTokenRule<PlusLexerToken>()
-val minusRule: Rule = singleTokenRule<MinusLexerToken>()
-val starRule: Rule = singleTokenRule<StarLexerToken>()
-val slashRule: Rule = singleTokenRule<SlashLexerToken>()
+val bangRule: Rule = symbolicTokenRule<BangLexerToken>()
+val plusRule: Rule = symbolicTokenRule<PlusLexerToken>()
+val minusRule: Rule = symbolicTokenRule<MinusLexerToken>()
+val starRule: Rule = symbolicTokenRule<StarLexerToken>()
+val slashRule: Rule = symbolicTokenRule<SlashLexerToken>()
 
-val greaterRule: Rule = singleTokenRule<GreaterLexerToken>()
-val greaterEqualRule: Rule = singleTokenRule<GreaterEqualLexerToken>()
-val lessRule: Rule = singleTokenRule<LessLexerToken>()
-val lessEqualRule: Rule = singleTokenRule<LessEqualLexerToken>()
+val greaterRule: Rule = symbolicTokenRule<GreaterLexerToken>()
+val greaterEqualRule: Rule = symbolicTokenRule<GreaterEqualLexerToken>()
+val lessRule: Rule = symbolicTokenRule<LessLexerToken>()
+val lessEqualRule: Rule = symbolicTokenRule<LessEqualLexerToken>()
 
-val bangEqualRule: Rule = singleTokenRule<BangEqualLexerToken>()
-val equalEqualRule: Rule = singleTokenRule<EqualEqualLexerToken>()
+val bangEqualRule: Rule = symbolicTokenRule<BangEqualLexerToken>()
+val equalEqualRule: Rule = symbolicTokenRule<EqualEqualLexerToken>()
 
 private val expressionRule = Rule { ctx ->
     equalityRule.match(ctx)
@@ -70,7 +66,10 @@ private val primaryExpressionRule = orRule(
 
 private val intermediateUnaryRule = Rule { ctx ->
     andRule(orRule(minusRule, bangRule), unaryOperatorRule) { tokens ->
-        tokens.toOperatorTypeAndOperand().let { UnaryOperatorExpression(it.first, it.second) }
+        tokens
+            .toOperatorTypeAndOperand()
+            .let { (type, operand) -> UnaryOperatorExpression(type, operand) }
+            .let(::NodeToken)
     }.match(ctx)
 }
 
