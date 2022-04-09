@@ -1,10 +1,10 @@
 package lexer
 
 private val lineBreakRegex = Regex("\\r?\\n")
-fun tokenize(source: String): List<LexerToken> =
-    source.split(lineBreakRegex)
+fun String.tokenize(): List<LexerToken> =
+    this.split(lineBreakRegex)
         .flatMapIndexed(::tokenizeLine)
-        .let { it.plusElement(EndOfLineLexerToken(it.last().position.nextLine())) }
+        .let { it.plusElement(EOFLexerToken(it.last().position.nextLine())) }
 
 private data class LexingContext(
     val remainingString: String,
@@ -23,7 +23,7 @@ private fun tokenizeLine(lineNumber: Int, line: String): List<LexerToken> {
 
     while (true) {
         val (currentToken, nextContext) = nextToken(currentContext)
-        if (currentToken is EndOfLineLexerToken) {
+        if (currentToken is EOFLexerToken) {
             return result
         } else if (currentToken is UnmatchedLexerToken) {
             throw RuntimeException("Unmatched token on position: ${currentToken.position}")
@@ -39,7 +39,7 @@ private fun nextToken(lexingContext: LexingContext): Pair<LexerToken, LexingCont
     val (source, position) = withoutWhitespacesAndComments
 
     val token: LexerToken = when {
-        source.isEmpty() -> EndOfLineLexerToken(position)
+        source.isEmpty() -> EOFLexerToken(position)
         source.startsWith("(") -> LeftParenLexerToken(position)
         source.startsWith(")") -> RightParenLexerToken(position)
         source.startsWith("{") -> LeftBraceLexerToken(position)

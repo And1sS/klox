@@ -11,7 +11,7 @@ data class Position(val line: Int, val position: Int) {
 sealed class LexerToken(val position: Position, val length: Int)
 
 class UnmatchedLexerToken(position: Position) : LexerToken(position, 0)
-class EndOfLineLexerToken(position: Position) : LexerToken(position, 0)
+class EOFLexerToken(position: Position) : LexerToken(position, 0)
 
 class LeftParenLexerToken(position: Position) : LexerToken(position, 1)
 class RightParenLexerToken(position: Position) : LexerToken(position, 1)

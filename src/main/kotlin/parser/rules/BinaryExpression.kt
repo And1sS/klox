@@ -19,7 +19,7 @@ fun binaryOperatorRule(operandRule: Rule, operatorRule: Rule): Rule = Rule { ctx
 
 private fun combineBinaryOperatorResult(matched: Matched): MatchResult {
     require(matched.token is CompositeToken) {
-        "Critical error: this branch shouldn't have been reached"
+        "This branch shouldn't have been reached"
     }
     val tokens = matched.token.tokens
     var processed: Expression = (tokens[0] as? NodeToken)?.node as? Expression

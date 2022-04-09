@@ -17,6 +17,19 @@ import kotlin.reflect.KClass
 
 sealed class AbstractSyntaxNode()
 
+sealed class Statement : Declaration()
+
+sealed class Declaration : AbstractSyntaxNode()
+
+data class VarDeclaration(
+    val identifier: IdentifierExpression,
+    val value: Expression?
+) : Declaration()
+
+data class PrintStatement(val expr: Expression) : Statement()
+
+data class ExpressionStatement(val expr: Expression) : Statement()
+
 sealed class Expression : AbstractSyntaxNode()
 
 sealed class Value : Expression()
@@ -42,10 +55,8 @@ data class BinaryOperatorExpression(
     val rhs: Expression
 ) : Expression()
 
-class IdentifierExpression(token: IdentifierLexerToken) : Expression() {
-    val name: String = token.name
-
-    override fun toString(): String = "IdentifierExpression(name = $name)"
+data class IdentifierExpression private constructor(val name: String) : Expression() {
+    constructor(token: IdentifierLexerToken) : this(token.name)
 }
 
 enum class OperatorType {

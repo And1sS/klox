@@ -1,5 +1,6 @@
-package evaluator
+package interpreter
 
+import exception.EvaluationException
 import parser.BinaryOperatorExpression
 import parser.BooleanValue
 import parser.NumericValue
@@ -8,14 +9,17 @@ import parser.StringValue
 import parser.Value
 import kotlin.reflect.KClass
 
-fun evaluateBinaryOperatorExpression(expression: BinaryOperatorExpression): Value {
+fun evaluateBinaryOperatorExpression(
+    expression: BinaryOperatorExpression,
+    evaluationEnvironment: Environment
+): Value {
     val operatorType = expression.operatorType
-    val lhs = evaluate(expression.lhs)
-    val rhs = evaluate(expression.rhs)
+    val lhs = evaluateExpression(expression.lhs, evaluationEnvironment)
+    val rhs = evaluateExpression(expression.rhs, evaluationEnvironment)
 
     val signature = BinaryOperatorSignature(operatorType, lhs::class, rhs::class)
     return binaryOperatorEvaluators[signature]?.invoke(lhs, rhs)
-        ?: throw RuntimeException(
+        ?: throw EvaluationException(
             "Invalid evaluation: could not find binary operator "
                     + "$operatorType for ${lhs::class} and ${rhs::class}"
         )
@@ -29,7 +33,7 @@ private inline fun <reified L : Value, reified R : Value> binaryOperatorEvaluato
     crossinline evaluator: (L, R) -> Value
 ): BinaryOperatorEvaluator = { lhs, rhs ->
     require(lhs is L && rhs is R) {
-        "Critical error: this branch shouldn't have been reached"
+        "This branch shouldn't have been reached"
     }
     evaluator(lhs, rhs)
 }

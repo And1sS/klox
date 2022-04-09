@@ -12,3 +12,11 @@ fun List<ParserToken>.toOperatorTypeAndOperand(): Pair<OperatorType, Expression>
         ?: throw RuntimeException("Invalid grammar: unknown operator")
     return Pair(operatorType, operand.node)
 }
+
+fun Value.asString(): String = when (this) {
+    is NilValue -> "nil"
+    is BooleanValue -> this.value.toString()
+    is NumericValue -> this.value.toString()
+    is StringValue -> this.value
+    is ObjectValue -> this.toString()
+}
