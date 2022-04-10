@@ -1,7 +1,9 @@
 import interpreter.interpret
+import interpreter.liveInterpret
 
 fun main() {
     // TODO: add error synchronization
+    liveInterpret()
     val program = """
             var a = 1;
             var b;

@@ -31,7 +31,7 @@ val blockRule: Rule =
 // declaration -> varDeclaration | statement | block
 val declarationRule: Rule = orRule(varDeclarationRule, statementRule, blockRule)
 
-// program -> declaration* EOF
+// program -> declaration*
 val programRule: Rule = zeroOrMoreRule(declarationRule) { tokens ->
     tokens
         .asDeclarationList()
