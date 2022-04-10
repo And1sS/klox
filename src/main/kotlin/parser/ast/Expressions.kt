@@ -30,6 +30,11 @@ data class StringValue(val value: String) : Value()
 // TODO: implement objects properly
 object ObjectValue : Value()
 
+data class AssignmentExpression(
+    val identifier: IdentifierExpression,
+    val expr: Expression
+) : Expression()
+
 data class UnaryOperatorExpression(
     val operatorType: OperatorType,
     val expr: Expression

@@ -1,6 +1,7 @@
 package interpreter
 
 import parser.asString
+import parser.ast.AssignmentExpression
 import parser.ast.BinaryOperatorExpression
 import parser.ast.BlockStatement
 import parser.ast.Declaration
@@ -52,7 +53,17 @@ private fun executeBlockStatement(statement: BlockStatement, evaluationEnvironme
 
 fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Value = when (expr) {
     is Value -> expr
+    is IdentifierExpression -> evaluationEnvironment.getVariableValue(expr)
     is UnaryOperatorExpression -> evaluateUnaryOperatorExpression(expr, evaluationEnvironment)
     is BinaryOperatorExpression -> evaluateBinaryOperatorExpression(expr, evaluationEnvironment)
-    is IdentifierExpression -> evaluationEnvironment.getVariableValue(expr)
+    is AssignmentExpression -> evaluateAssignmentExpression(expr, evaluationEnvironment)
+}
+
+private fun evaluateAssignmentExpression(
+    expr: AssignmentExpression,
+    evaluationEnvironment: Environment
+): Value {
+    val exprValue = evaluateExpression(expr.expr, evaluationEnvironment)
+    evaluationEnvironment.assignVariable(expr.identifier, exprValue)
+    return exprValue
 }

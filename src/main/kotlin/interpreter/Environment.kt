@@ -14,6 +14,16 @@ class Environment(private val parentEnvironment: Environment?) {
         variables[name] = value
     }
 
+    fun assignVariable(name: IdentifierExpression, value: Value) {
+        if (variables.containsKey(name)) {
+            variables[name] = value
+        } else if (parentEnvironment != null) {
+            parentEnvironment.assignVariable(name, value)
+        } else {
+            throw EvaluationException("Undefined variable: ${name.name}")
+        }
+    }
+
     fun getVariableValue(name: IdentifierExpression): Value =
         variables.getOrElse(name) {
             parentEnvironment?.getVariableValue(name)

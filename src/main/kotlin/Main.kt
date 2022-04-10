@@ -3,16 +3,14 @@ import interpreter.interpret
 fun main() {
     // TODO: add error synchronization
     val program = """
-            var b = 12 - 5;
-            print b;
+            var a = 1;
+            var b;
+            print a;
             {
-                var c = 3;
-                var b = b + 1;
-                print b;
+                print a = b = 2;
+                print a + b;
             }
-            
-            var d = 3;
-            //print c + d;
+            print a;
             """
     interpret(program)
 }
