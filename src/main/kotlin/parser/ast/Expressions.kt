@@ -1,4 +1,4 @@
-package parser
+package parser.ast
 
 import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
@@ -15,21 +15,6 @@ import lexer.SlashLexerToken
 import lexer.StarLexerToken
 import kotlin.reflect.KClass
 
-sealed class AbstractSyntaxNode()
-
-sealed class Statement : Declaration()
-
-sealed class Declaration : AbstractSyntaxNode()
-
-data class VarDeclaration(
-    val identifier: IdentifierExpression,
-    val value: Expression?
-) : Declaration()
-
-data class PrintStatement(val expr: Expression) : Statement()
-
-data class ExpressionStatement(val expr: Expression) : Statement()
-
 sealed class Expression : AbstractSyntaxNode()
 
 sealed class Value : Expression()
@@ -40,9 +25,10 @@ data class BooleanValue(val value: Boolean) : Value()
 
 data class NumericValue(val value: Double) : Value()
 
-class StringValue(val value: String) : Value()
+data class StringValue(val value: String) : Value()
 
-class ObjectValue() : Value()
+// TODO: implement objects properly
+object ObjectValue : Value()
 
 data class UnaryOperatorExpression(
     val operatorType: OperatorType,
@@ -73,7 +59,7 @@ enum class OperatorType {
     EqualEqual
 }
 
-val operatorMapping = mapOf<KClass<out LexerToken>, OperatorType>(
+val operatorMapping: Map<KClass<out LexerToken>, OperatorType> = mapOf(
     BangLexerToken::class to OperatorType.Bang,
     PlusLexerToken::class to OperatorType.Plus,
     MinusLexerToken::class to OperatorType.Minus,

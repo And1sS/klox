@@ -1,12 +1,12 @@
 package interpreter
 
 import exception.EvaluationException
-import parser.BinaryOperatorExpression
-import parser.BooleanValue
-import parser.NumericValue
-import parser.OperatorType
-import parser.StringValue
-import parser.Value
+import parser.ast.BinaryOperatorExpression
+import parser.ast.BooleanValue
+import parser.ast.NumericValue
+import parser.ast.OperatorType
+import parser.ast.StringValue
+import parser.ast.Value
 import kotlin.reflect.KClass
 
 fun evaluateBinaryOperatorExpression(
@@ -49,8 +49,8 @@ private inline fun numericalBinaryOperatorEvaluator(
     crossinline evaluator: (NumericValue, NumericValue) -> Value
 ) = sameTypeBinaryOperatorEvaluator(type, evaluator)
 
-private val binaryOperatorEvaluators =
-    mapOf<BinaryOperatorSignature, BinaryOperatorEvaluator>(
+private val binaryOperatorEvaluators: Map<BinaryOperatorSignature, BinaryOperatorEvaluator> =
+    mapOf(
         numericalBinaryOperatorEvaluator(OperatorType.Plus, ::add),
         numericalBinaryOperatorEvaluator(OperatorType.Minus, ::subtract),
         numericalBinaryOperatorEvaluator(OperatorType.Star, ::multiply),

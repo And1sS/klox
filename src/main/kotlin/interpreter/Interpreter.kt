@@ -4,13 +4,13 @@ import lexer.tokenize
 import parser.Matched
 import parser.ProgramToken
 import parser.Unmatched
-import parser.programRule
+import parser.rules.programRule
 import parser.toParsingContext
 
 fun interpret(program: String) {
-    val parsingContext = program.tokenize().toParsingContext()
+    val initialContext = program.tokenize().toParsingContext()
 
-    val matchResult = programRule.match(parsingContext)
+    val matchResult = programRule.match(initialContext)
     if (matchResult is Unmatched) {
         throw RuntimeException("Unable to parse program")
     }
@@ -26,5 +26,10 @@ fun interpret(program: String) {
     val globalEnvironment = Environment()
     for (declaration in programToken.declarations) {
         evaluateDeclaration(declaration, globalEnvironment)
+    }
+
+    val finalContext = matchResult.newCtx
+    if (finalContext.currentIndex != initialContext.tokens.lastIndex) {
+        throw RuntimeException("Could not interpret program on: ${finalContext.currentToken().position}")
     }
 }

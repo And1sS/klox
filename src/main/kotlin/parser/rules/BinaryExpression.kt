@@ -1,12 +1,14 @@
-import parser.BinaryOperatorExpression
+package parser.rules
+
 import parser.CompositeToken
-import parser.Expression
 import parser.MatchResult
 import parser.Matched
 import parser.NodeToken
 import parser.Rule
 import parser.Unmatched
 import parser.andRule
+import parser.ast.BinaryOperatorExpression
+import parser.ast.Expression
 import parser.toOperatorTypeAndOperand
 import parser.zeroOrMoreRule
 

@@ -1,5 +1,15 @@
 package parser
 
+import parser.ast.BooleanValue
+import parser.ast.Expression
+import parser.ast.NilValue
+import parser.ast.NumericValue
+import parser.ast.ObjectValue
+import parser.ast.OperatorType
+import parser.ast.StringValue
+import parser.ast.Value
+import parser.ast.operatorMapping
+
 fun List<ParserToken>.toOperatorTypeAndOperand(): Pair<OperatorType, Expression> {
     val (operator, operand) = this
     require(operator is SymbolicToken) {

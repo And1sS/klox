@@ -6,6 +6,8 @@ data class Position(val line: Int, val position: Int) {
 
     fun nextLine(): Position =
         Position(line + 1, 0)
+
+    override fun toString(): String = "Position(line=${line + 1}, position=$position)"
 }
 
 sealed class LexerToken(val position: Position, val length: Int)

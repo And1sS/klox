@@ -1,6 +1,8 @@
 package parser
 
 import lexer.LexerToken
+import parser.ast.AbstractSyntaxNode
+import parser.ast.Declaration
 
 data class ParsingContext(val tokens: List<LexerToken>, val currentIndex: Int) {
     fun move(amount: Int): ParsingContext =
@@ -19,7 +21,14 @@ sealed class ParserToken
 data class SymbolicToken(val lexerToken: LexerToken) : ParserToken()
 data class NodeToken(val node: AbstractSyntaxNode) : ParserToken()
 data class CompositeToken(val tokens: List<ParserToken>) : ParserToken()
-data class ProgramToken(val declarations: List<Declaration>) : ParserToken()
+data class ProgramToken(val declarations: List<Declaration>) : ParserToken() {
+    override fun toString(): String =
+        """"ProgramToken(
+            | declarations = 
+            | ${declarations.joinToString("\n")}
+            |)""".trimMargin()
+}
+
 data class OptionalToken(val token: ParserToken?) : ParserToken() {
     companion object {
         fun empty(): OptionalToken = OptionalToken(null)

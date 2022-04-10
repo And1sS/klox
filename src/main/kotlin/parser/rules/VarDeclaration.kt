@@ -1,20 +1,16 @@
 package parser.rules
 
 import parser.Combiner
-import parser.Expression
-import parser.IdentifierExpression
+import parser.ast.Expression
+import parser.ast.IdentifierExpression
 import parser.NodeToken
 import parser.OptionalToken
 import parser.Rule
-import parser.VarDeclaration
+import parser.ast.VarDeclaration
 import parser.andRule
-import parser.equalRule
-import parser.expressionRule
-import parser.identifierRule
 import parser.optionalRule
-import parser.semicolonRule
-import parser.varRule
 
+// varDeclaration -> "var" identifier ( "=" expression )? ";"
 val varDeclarationRule: Rule = andRule(
     varRule,
     identifierRule,

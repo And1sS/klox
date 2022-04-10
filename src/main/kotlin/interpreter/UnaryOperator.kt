@@ -1,11 +1,11 @@
 package interpreter
 
 import exception.EvaluationException
-import parser.BooleanValue
-import parser.NumericValue
-import parser.OperatorType
-import parser.UnaryOperatorExpression
-import parser.Value
+import parser.ast.BooleanValue
+import parser.ast.NumericValue
+import parser.ast.OperatorType
+import parser.ast.UnaryOperatorExpression
+import parser.ast.Value
 import kotlin.reflect.KClass
 
 fun evaluateUnaryOperatorExpression(
@@ -26,8 +26,8 @@ fun evaluateUnaryOperatorExpression(
 private typealias UnaryOperatorEvaluator = (Value) -> Value
 private typealias UnaryOperatorSignature = Pair<OperatorType, KClass<out Value>>
 
-private val unaryOperatorEvaluators =
-    mapOf<UnaryOperatorSignature, UnaryOperatorEvaluator>(
+private val unaryOperatorEvaluators: Map<UnaryOperatorSignature, UnaryOperatorEvaluator> =
+    mapOf(
         UnaryOperatorSignature(OperatorType.Minus, NumericValue::class)
                 to unaryOperatorEvaluator(::negateNumerical),
         UnaryOperatorSignature(OperatorType.Bang, BooleanValue::class)
