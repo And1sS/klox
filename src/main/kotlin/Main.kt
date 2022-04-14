@@ -1,17 +1,16 @@
 import interpreter.interpret
-import interpreter.liveInterpret
 
 fun main() {
     // TODO: add error synchronization
-    liveInterpret()
     val program = """
             var a = 1;
-            var b;
-            print a;
-            {
-                print a = b = 2;
-                print a + b;
+            if (a < 3 or true) {
+                a = 4;  
+            } else {
+                a = 2;
             }
+            
+            print "Value of a: ";
             print a;
             """
     interpret(program)

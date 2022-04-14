@@ -1,12 +1,15 @@
 package interpreter
 
 import exception.EvaluationException
+import parser.ast.AbstractSyntaxNode
 import parser.ast.BinaryOperatorExpression
 import parser.ast.BooleanValue
 import parser.ast.NumericValue
 import parser.ast.OperatorType
 import parser.ast.StringValue
 import parser.ast.Value
+import parser.validateBoolean
+import parser.validateGrammar
 import kotlin.reflect.KClass
 
 fun evaluateBinaryOperatorExpression(
@@ -14,6 +17,10 @@ fun evaluateBinaryOperatorExpression(
     evaluationEnvironment: Environment
 ): Value {
     val operatorType = expression.operatorType
+    if (operatorType == OperatorType.And || operatorType == OperatorType.Or) {
+        return evaluateLogicalBinaryOperatorExpression(expression, evaluationEnvironment)
+    }
+
     val lhs = evaluateExpression(expression.lhs, evaluationEnvironment)
     val rhs = evaluateExpression(expression.rhs, evaluationEnvironment)
 
@@ -25,6 +32,25 @@ fun evaluateBinaryOperatorExpression(
         )
 }
 
+private fun evaluateLogicalBinaryOperatorExpression(
+    expression: BinaryOperatorExpression,
+    evaluationEnvironment: Environment
+): Value {
+    val lhsResult = evaluateExpression(expression.lhs, evaluationEnvironment)
+    validateBoolean(lhsResult)
+
+    return if (
+        expression.operatorType == OperatorType.Or && lhsResult.value
+        && expression.operatorType == OperatorType.And && !lhsResult.value
+    ) {
+        lhsResult
+    } else {
+        val rhsResult = evaluateExpression(expression.rhs, evaluationEnvironment)
+        validateBoolean(rhsResult)
+        rhsResult
+    }
+}
+
 private typealias BinaryOperatorEvaluator = (Value, Value) -> Value
 private typealias BinaryOperatorSignature =
         Triple<OperatorType, KClass<out Value>, KClass<out Value>>
@@ -32,9 +58,8 @@ private typealias BinaryOperatorSignature =
 private inline fun <reified L : Value, reified R : Value> binaryOperatorEvaluator(
     crossinline evaluator: (L, R) -> Value
 ): BinaryOperatorEvaluator = { lhs, rhs ->
-    require(lhs is L && rhs is R) {
-        "This branch shouldn't have been reached"
-    }
+    validateGrammar(lhs is L && rhs is R)
+
     evaluator(lhs, rhs)
 }
 

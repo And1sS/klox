@@ -8,12 +8,14 @@ import parser.ast.Declaration
 import parser.ast.Expression
 import parser.ast.ExpressionStatement
 import parser.ast.IdentifierExpression
+import parser.ast.IfStatement
 import parser.ast.NilValue
 import parser.ast.PrintStatement
 import parser.ast.Statement
 import parser.ast.UnaryOperatorExpression
 import parser.ast.Value
 import parser.ast.VarDeclaration
+import parser.validateBoolean
 
 fun evaluateDeclaration(declaration: Declaration, evaluationEnvironment: Environment) {
     when (declaration) {
@@ -35,6 +37,7 @@ private fun executeStatement(statement: Statement, evaluationEnvironment: Enviro
         is ExpressionStatement -> evaluateExpression(statement.expr, evaluationEnvironment)
         is PrintStatement -> executePrintStatement(statement, evaluationEnvironment)
         is BlockStatement -> executeBlockStatement(statement, evaluationEnvironment)
+        is IfStatement -> executeIfStatement(statement, evaluationEnvironment)
     }
 }
 
@@ -49,6 +52,14 @@ private fun executeBlockStatement(statement: BlockStatement, evaluationEnvironme
     for (declaration in statement.declarations) {
         evaluateDeclaration(declaration, blockEnvironment)
     }
+}
+
+private fun executeIfStatement(statement: IfStatement, evaluationEnvironment: Environment) {
+    val conditionValue = evaluateExpression(statement.condition, evaluationEnvironment)
+    validateBoolean(conditionValue)
+
+    val body = if (conditionValue.value) statement.body else statement.elseBody
+    body?.let { executeStatement(it, evaluationEnvironment) }
 }
 
 fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Value = when (expr) {

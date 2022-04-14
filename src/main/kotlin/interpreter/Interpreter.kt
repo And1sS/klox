@@ -14,6 +14,7 @@ import parser.rules.eofRule
 import parser.rules.expressionRule
 import parser.rules.programRule
 import parser.toParsingContext
+import parser.validateGrammar
 
 fun interpret(program: String) {
     val initialContext = program.tokenize().toParsingContext()
@@ -22,14 +23,10 @@ fun interpret(program: String) {
     if (matchResult is Unmatched) {
         throw RuntimeException("Unable to parse program")
     }
-    require(matchResult is Matched) {
-        "This branch shouldn't have been reached"
-    }
+    validateGrammar(matchResult is Matched)
 
     val programToken = matchResult.token
-    require(programToken is ProgramToken) {
-        "Invalid grammar: top level token is not a program token"
-    }
+    validateGrammar(programToken is ProgramToken)
 
     val globalEnvironment = Environment()
     for (declaration in programToken.declarations) {
@@ -60,23 +57,18 @@ fun liveInterpret() {
             println("Parsing error")
             continue
         }
-        require(matchResult is Matched) {
-            "This branch shouldn't have been reached"
-        }
+        validateGrammar(matchResult is Matched)
 
-        var lineToken = matchResult.token
+        val lineToken = matchResult.token
         if (lineToken is NodeToken) {
             if (lineToken.node !is Expression) {
                 println("Parsing error")
                 continue
             }
-            evaluateDeclaration(PrintStatement(lineToken.node as Expression), globalEnvironment)
+            evaluateDeclaration(PrintStatement(lineToken.node), globalEnvironment)
             continue
         }
-
-        require(lineToken is ProgramToken) {
-            "Invalid grammar: top level token is not a program token"
-        }
+        validateGrammar(lineToken is ProgramToken)
 
         for (declaration in lineToken.declarations) {
             evaluateDeclaration(declaration, globalEnvironment)

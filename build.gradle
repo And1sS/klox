@@ -8,3 +8,9 @@ version '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
 }
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += "-opt-in=kotlin.contracts.ExperimentalContracts"
+    }
+}

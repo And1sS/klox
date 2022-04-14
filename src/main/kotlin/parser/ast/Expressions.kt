@@ -1,5 +1,6 @@
 package parser.ast
 
+import lexer.AndLexerToken
 import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
 import lexer.EqualEqualLexerToken
@@ -10,6 +11,7 @@ import lexer.LessEqualLexerToken
 import lexer.LessLexerToken
 import lexer.LexerToken
 import lexer.MinusLexerToken
+import lexer.OrLexerToken
 import lexer.PlusLexerToken
 import lexer.SlashLexerToken
 import lexer.StarLexerToken
@@ -61,7 +63,9 @@ enum class OperatorType {
     Less,
     LessEqual,
     BangEqual,
-    EqualEqual
+    EqualEqual,
+    Or,
+    And
 }
 
 val operatorMapping: Map<KClass<out LexerToken>, OperatorType> = mapOf(
@@ -75,5 +79,7 @@ val operatorMapping: Map<KClass<out LexerToken>, OperatorType> = mapOf(
     LessLexerToken::class to OperatorType.Less,
     LessEqualLexerToken::class to OperatorType.LessEqual,
     BangEqualLexerToken::class to OperatorType.BangEqual,
-    EqualEqualLexerToken::class to OperatorType.EqualEqual
+    EqualEqualLexerToken::class to OperatorType.EqualEqual,
+    OrLexerToken::class to OperatorType.Or,
+    AndLexerToken::class to OperatorType.And
 )

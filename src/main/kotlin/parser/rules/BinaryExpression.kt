@@ -10,6 +10,7 @@ import parser.andRule
 import parser.ast.BinaryOperatorExpression
 import parser.ast.Expression
 import parser.toOperatorTypeAndOperand
+import parser.validateGrammar
 import parser.zeroOrMoreRule
 
 // binaryOperator -> operand (operator operand)*
@@ -20,9 +21,7 @@ fun binaryOperatorRule(operandRule: Rule, operatorRule: Rule): Rule = Rule { ctx
 }
 
 private fun combineBinaryOperatorResult(matched: Matched): MatchResult {
-    require(matched.token is CompositeToken) {
-        "This branch shouldn't have been reached"
-    }
+    validateGrammar(matched.token is CompositeToken)
     val tokens = matched.token.tokens
     var processed: Expression = (tokens[0] as? NodeToken)?.node as? Expression
         ?: throw RuntimeException("Invalid grammar: operator argument is not an expression")

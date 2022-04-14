@@ -1,13 +1,16 @@
 package parser.rules
 
+import lexer.AndLexerToken
 import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
 import lexer.EOFLexerToken
+import lexer.ElseLexerToken
 import lexer.EqualEqualLexerToken
 import lexer.EqualLexerToken
 import lexer.FalseLexerToken
 import lexer.GreaterEqualLexerToken
 import lexer.GreaterLexerToken
+import lexer.IfLexerToken
 import lexer.LeftBraceLexerToken
 import lexer.LeftParenLexerToken
 import lexer.LessEqualLexerToken
@@ -15,6 +18,7 @@ import lexer.LessLexerToken
 import lexer.MinusLexerToken
 import lexer.NilLexerToken
 import lexer.NumberLiteralLexerToken
+import lexer.OrLexerToken
 import lexer.PlusLexerToken
 import lexer.PrintLexerToken
 import lexer.RightBraceLexerToken
@@ -25,32 +29,36 @@ import lexer.StarLexerToken
 import lexer.StringLiteralLexerToken
 import lexer.TrueLexerToken
 import lexer.VarLexerToken
+import parser.Rule
 import parser.ast.BooleanValue
 import parser.ast.IdentifierExpression
 import parser.ast.NilValue
 import parser.ast.NumericValue
-import parser.Rule
 import parser.ast.StringValue
 import parser.nodeTokenRule
 import parser.symbolicTokenRule
 
-val identifierRule = nodeTokenRule(::IdentifierExpression)
-val stringLiteralRule = nodeTokenRule<StringLiteralLexerToken> { StringValue(it.value) }
-val numberLiteralRule = nodeTokenRule<NumberLiteralLexerToken> { NumericValue(it.value) }
+val identifierRule: Rule = nodeTokenRule(::IdentifierExpression)
+val stringLiteralRule: Rule = nodeTokenRule<StringLiteralLexerToken> { StringValue(it.value) }
+val numberLiteralRule: Rule = nodeTokenRule<NumberLiteralLexerToken> { NumericValue(it.value) }
 
-val printRule = symbolicTokenRule<PrintLexerToken>()
-val varRule = symbolicTokenRule<VarLexerToken>()
+val ifKeywordRule: Rule = symbolicTokenRule<IfLexerToken>()
+val elseKeywordRule: Rule = symbolicTokenRule<ElseLexerToken>()
+val orKeywordRule: Rule = symbolicTokenRule<OrLexerToken>()
+val andKeywordRule: Rule = symbolicTokenRule<AndLexerToken>()
+val printKeywordRule: Rule = symbolicTokenRule<PrintLexerToken>()
+val varKeywordRule: Rule = symbolicTokenRule<VarLexerToken>()
 
-val trueRule = nodeTokenRule<TrueLexerToken> { BooleanValue(true) }
-val falseRule = nodeTokenRule<FalseLexerToken> { BooleanValue(false) }
-val nilRule = nodeTokenRule<NilLexerToken> { NilValue }
+val trueRule: Rule = nodeTokenRule<TrueLexerToken> { BooleanValue(true) }
+val falseRule: Rule = nodeTokenRule<FalseLexerToken> { BooleanValue(false) }
+val nilRule: Rule = nodeTokenRule<NilLexerToken> { NilValue }
 
-val semicolonRule = symbolicTokenRule<SemicolonLexerToken>()
+val semicolonRule: Rule = symbolicTokenRule<SemicolonLexerToken>()
 
-val leftBraceRule = symbolicTokenRule<LeftBraceLexerToken>()
-val rightBraceRule = symbolicTokenRule<RightBraceLexerToken>()
-val leftParenRule = symbolicTokenRule<LeftParenLexerToken>()
-val rightParenRule = symbolicTokenRule<RightParenLexerToken>()
+val leftBraceRule: Rule = symbolicTokenRule<LeftBraceLexerToken>()
+val rightBraceRule: Rule = symbolicTokenRule<RightBraceLexerToken>()
+val leftParenRule: Rule = symbolicTokenRule<LeftParenLexerToken>()
+val rightParenRule: Rule = symbolicTokenRule<RightParenLexerToken>()
 
 val bangRule: Rule = symbolicTokenRule<BangLexerToken>()
 val plusRule: Rule = symbolicTokenRule<PlusLexerToken>()

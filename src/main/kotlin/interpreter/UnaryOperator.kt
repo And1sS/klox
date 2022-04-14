@@ -6,6 +6,7 @@ import parser.ast.NumericValue
 import parser.ast.OperatorType
 import parser.ast.UnaryOperatorExpression
 import parser.ast.Value
+import parser.validateGrammar
 import kotlin.reflect.KClass
 
 fun evaluateUnaryOperatorExpression(
@@ -40,8 +41,7 @@ private fun negateBoolean(value: BooleanValue): Value = BooleanValue(!value.valu
 private inline fun <reified T : Value> unaryOperatorEvaluator(
     crossinline evaluator: (T) -> Value
 ): UnaryOperatorEvaluator = { value ->
-    require(value is T) {
-        "This branch shouldn't have been reached"
-    }
+    validateGrammar(value is T)
+
     evaluator(value)
 }

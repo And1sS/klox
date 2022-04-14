@@ -9,10 +9,11 @@ import parser.Rule
 import parser.ast.VarDeclaration
 import parser.andRule
 import parser.optionalRule
+import parser.validateGrammar
 
 // varDeclaration -> "var" identifier ( "=" expression )? ";"
 val varDeclarationRule: Rule = andRule(
-    varRule,
+    varKeywordRule,
     identifierRule,
     optionalRule(
         andRule(equalRule, expressionRule) { assignmentCombiner(it) }
@@ -22,17 +23,11 @@ val varDeclarationRule: Rule = andRule(
 
 private val varDeclarationCombiner: Combiner = { tokens ->
     val (_, identifierToken, optionalToken, _) = tokens
-    require(identifierToken is NodeToken && identifierToken.node is IdentifierExpression) {
-        "Invalid grammar"
-    }
-    require(optionalToken is OptionalToken) {
-        "Invalid grammar"
-    }
+    validateGrammar(identifierToken is NodeToken && identifierToken.node is IdentifierExpression)
+    validateGrammar(optionalToken is OptionalToken)
 
     val valueExpression: Expression? = optionalToken.token?.let {
-        require(optionalToken.token is NodeToken && optionalToken.token.node is Expression) {
-            "Invalid grammar"
-        }
+        validateGrammar(optionalToken.token is NodeToken && optionalToken.token.node is Expression)
 
         optionalToken.token.node
     }
@@ -42,9 +37,7 @@ private val varDeclarationCombiner: Combiner = { tokens ->
 
 private val assignmentCombiner: Combiner = { tokens ->
     val (_, expressionToken) = tokens
-    require(expressionToken is NodeToken && expressionToken.node is Expression) {
-        "Invalid grammar"
-    }
+    validateGrammar(expressionToken is NodeToken && expressionToken.node is Expression)
 
     NodeToken(expressionToken.node)
 }
