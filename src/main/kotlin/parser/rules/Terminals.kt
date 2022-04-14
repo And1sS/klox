@@ -8,6 +8,7 @@ import lexer.ElseLexerToken
 import lexer.EqualEqualLexerToken
 import lexer.EqualLexerToken
 import lexer.FalseLexerToken
+import lexer.ForLexerToken
 import lexer.GreaterEqualLexerToken
 import lexer.GreaterLexerToken
 import lexer.IfLexerToken
@@ -29,6 +30,7 @@ import lexer.StarLexerToken
 import lexer.StringLiteralLexerToken
 import lexer.TrueLexerToken
 import lexer.VarLexerToken
+import lexer.WhileLexerToken
 import parser.Rule
 import parser.ast.BooleanValue
 import parser.ast.IdentifierExpression
@@ -46,6 +48,8 @@ val ifKeywordRule: Rule = symbolicTokenRule<IfLexerToken>()
 val elseKeywordRule: Rule = symbolicTokenRule<ElseLexerToken>()
 val orKeywordRule: Rule = symbolicTokenRule<OrLexerToken>()
 val andKeywordRule: Rule = symbolicTokenRule<AndLexerToken>()
+val whileKeywordRule: Rule = symbolicTokenRule<WhileLexerToken>()
+val forKeywordRule: Rule = symbolicTokenRule<ForLexerToken>()
 val printKeywordRule: Rule = symbolicTokenRule<PrintLexerToken>()
 val varKeywordRule: Rule = symbolicTokenRule<VarLexerToken>()
 

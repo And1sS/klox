@@ -4,9 +4,11 @@ import parser.asString
 import parser.ast.AssignmentExpression
 import parser.ast.BinaryOperatorExpression
 import parser.ast.BlockStatement
+import parser.ast.BooleanValue
 import parser.ast.Declaration
 import parser.ast.Expression
 import parser.ast.ExpressionStatement
+import parser.ast.ForStatement
 import parser.ast.IdentifierExpression
 import parser.ast.IfStatement
 import parser.ast.NilValue
@@ -15,16 +17,17 @@ import parser.ast.Statement
 import parser.ast.UnaryOperatorExpression
 import parser.ast.Value
 import parser.ast.VarDeclaration
+import parser.ast.WhileStatement
 import parser.validateBoolean
 
-fun evaluateDeclaration(declaration: Declaration, evaluationEnvironment: Environment) {
+fun executeDeclaration(declaration: Declaration, evaluationEnvironment: Environment) {
     when (declaration) {
-        is VarDeclaration -> evaluateVarDeclaration(declaration, evaluationEnvironment)
+        is VarDeclaration -> executeVarDeclaration(declaration, evaluationEnvironment)
         is Statement -> executeStatement(declaration, evaluationEnvironment)
     }
 }
 
-private fun evaluateVarDeclaration(declaration: VarDeclaration, evaluationEnvironment: Environment) {
+private fun executeVarDeclaration(declaration: VarDeclaration, evaluationEnvironment: Environment) {
     val variableValue = declaration.value?.let {
         evaluateExpression(it, evaluationEnvironment)
     } ?: NilValue
@@ -38,6 +41,8 @@ private fun executeStatement(statement: Statement, evaluationEnvironment: Enviro
         is PrintStatement -> executePrintStatement(statement, evaluationEnvironment)
         is BlockStatement -> executeBlockStatement(statement, evaluationEnvironment)
         is IfStatement -> executeIfStatement(statement, evaluationEnvironment)
+        is WhileStatement -> executeWhileStatement(statement, evaluationEnvironment)
+        is ForStatement -> executeForStatement(statement, evaluationEnvironment)
     }
 }
 
@@ -50,7 +55,7 @@ private fun executePrintStatement(statement: PrintStatement, evaluationEnvironme
 private fun executeBlockStatement(statement: BlockStatement, evaluationEnvironment: Environment) {
     val blockEnvironment = Environment(evaluationEnvironment)
     for (declaration in statement.declarations) {
-        evaluateDeclaration(declaration, blockEnvironment)
+        executeDeclaration(declaration, blockEnvironment)
     }
 }
 
@@ -60,6 +65,33 @@ private fun executeIfStatement(statement: IfStatement, evaluationEnvironment: En
 
     val body = if (conditionValue.value) statement.body else statement.elseBody
     body?.let { executeStatement(it, evaluationEnvironment) }
+}
+
+private fun executeWhileStatement(statement: WhileStatement, evaluationEnvironment: Environment) {
+    while (true) {
+        val condition = evaluateExpression(statement.condition, evaluationEnvironment)
+        validateBoolean(condition)
+
+        if (!condition.value) break
+        executeStatement(statement.body, evaluationEnvironment)
+    }
+}
+
+private fun executeForStatement(statement: ForStatement, evaluationEnvironment: Environment) {
+    val forEnvironment = Environment(evaluationEnvironment)
+    statement.initializer?.let { executeDeclaration(it, forEnvironment) }
+
+    while (true) {
+        val condition: Value = statement.condition?.let {
+            evaluateExpression(it, forEnvironment)
+        } ?: BooleanValue(true)
+
+        validateBoolean(condition)
+        if (!condition.value) break
+
+        executeStatement(statement.body, forEnvironment)
+        statement.increment?.let { evaluateExpression(it, forEnvironment) }
+    }
 }
 
 fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Value = when (expr) {

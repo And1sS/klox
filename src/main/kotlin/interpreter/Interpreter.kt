@@ -30,7 +30,7 @@ fun interpret(program: String) {
 
     val globalEnvironment = Environment()
     for (declaration in programToken.declarations) {
-        evaluateDeclaration(declaration, globalEnvironment)
+        executeDeclaration(declaration, globalEnvironment)
     }
 
     val finalContext = matchResult.newCtx
@@ -65,13 +65,13 @@ fun liveInterpret() {
                 println("Parsing error")
                 continue
             }
-            evaluateDeclaration(PrintStatement(lineToken.node), globalEnvironment)
+            executeDeclaration(PrintStatement(lineToken.node), globalEnvironment)
             continue
         }
         validateGrammar(lineToken is ProgramToken)
 
         for (declaration in lineToken.declarations) {
-            evaluateDeclaration(declaration, globalEnvironment)
+            executeDeclaration(declaration, globalEnvironment)
         }
 
         val finalContext = matchResult.newCtx

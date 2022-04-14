@@ -30,10 +30,10 @@ fun Value.asString(): String = when (this) {
     is ObjectValue -> this.toString()
 }
 
-// To add destructuring capabilities for lists with 6 elements
-operator fun <T> List<T>.component6(): T {
-    return get(5)
-}
+// To enhance list destructuring capabilities
+operator fun <T> List<T>.component6(): T = get(5)
+operator fun <T> List<T>.component7(): T = get(6)
+operator fun <T> List<T>.component8(): T = get(7)
 
 fun validateGrammar(value: Boolean) {
     contract {
@@ -41,6 +41,8 @@ fun validateGrammar(value: Boolean) {
     }
     require(value) { "Invalid grammar" }
 }
+
+fun throwInvalidGrammar(): Unit = validateGrammar(false)
 
 fun validateBoolean(value: Value) {
     contract {

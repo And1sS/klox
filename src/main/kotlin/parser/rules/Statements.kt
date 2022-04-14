@@ -11,6 +11,7 @@ import parser.ast.ExpressionStatement
 import parser.ast.IfStatement
 import parser.ast.PrintStatement
 import parser.ast.Statement
+import parser.ast.WhileStatement
 import parser.component6
 import parser.optionalRule
 import parser.orRule
@@ -66,13 +67,27 @@ val ifStatementRule: Rule = andRule(
         elseBodyToken.node
     }
 
-   NodeToken(IfStatement(conditionToken.node, bodyToken.node, elseBody))
+    NodeToken(IfStatement(conditionToken.node, bodyToken.node, elseBody))
 }
 
-// statement -> expressionStatement | printStatement | blockStatement | ifStatement
+// whileStatement -> "while" "(" expression ")" statement
+val whileStatementRule: Rule = andRule(
+    whileKeywordRule, leftParenRule, expressionRule, rightParenRule,
+    intermediateStatementRule
+) { tokens ->
+    val (_, _, conditionToken, _, bodyToken) = tokens
+    validateGrammar(conditionToken is NodeToken && conditionToken.node is Expression)
+    validateGrammar(bodyToken is NodeToken && bodyToken.node is Statement)
+
+    NodeToken(WhileStatement(conditionToken.node, bodyToken.node))
+}
+
+// statement -> expressionStatement | printStatement | blockStatement | ifStatement | whileStatement | forStatement
 val statementRule: Rule = orRule(
     expressionStatementRule,
     printStatementRule,
     blockStatementRule,
-    ifStatementRule
+    ifStatementRule,
+    whileStatementRule,
+    forStatementRule
 )

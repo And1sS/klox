@@ -15,6 +15,32 @@ data class IfStatement(
     val elseBody: Statement?
 ) : Statement()
 
+data class WhileStatement(
+    val condition: Expression,
+    val body: Statement
+) : Statement()
+
+data class ForStatement private constructor(
+    val initializer: Declaration?,
+    val condition: Expression?,
+    val increment: Expression?,
+    val body: Statement
+) : Statement() {
+    constructor(
+        initializer: VarDeclaration?,
+        condition: Expression?,
+        increment: Expression?,
+        body: Statement
+    ) : this(initializer as? Declaration, condition, increment, body)
+
+    constructor(
+        initializer: ExpressionStatement?,
+        condition: Expression?,
+        increment: Expression?,
+        body: Statement
+    ) : this(initializer as? Declaration, condition, increment, body)
+}
+
 data class PrintStatement(val expr: Expression) : Statement()
 
 data class ExpressionStatement(val expr: Expression) : Statement()
