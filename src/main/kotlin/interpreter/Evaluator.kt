@@ -9,6 +9,8 @@ import parser.ast.Declaration
 import parser.ast.Expression
 import parser.ast.ExpressionStatement
 import parser.ast.ForStatement
+import parser.ast.FunctionCallExpression
+import parser.ast.FunctionValue
 import parser.ast.IdentifierExpression
 import parser.ast.IfStatement
 import parser.ast.NilValue
@@ -18,7 +20,8 @@ import parser.ast.UnaryOperatorExpression
 import parser.ast.Value
 import parser.ast.VarDeclaration
 import parser.ast.WhileStatement
-import parser.validateBoolean
+import parser.validateRuntime
+import parser.validateRuntimeBoolean
 
 fun executeDeclaration(declaration: Declaration, evaluationEnvironment: Environment) {
     when (declaration) {
@@ -61,7 +64,7 @@ private fun executeBlockStatement(statement: BlockStatement, evaluationEnvironme
 
 private fun executeIfStatement(statement: IfStatement, evaluationEnvironment: Environment) {
     val conditionValue = evaluateExpression(statement.condition, evaluationEnvironment)
-    validateBoolean(conditionValue)
+    validateRuntimeBoolean(conditionValue)
 
     val body = if (conditionValue.value) statement.body else statement.elseBody
     body?.let { executeStatement(it, evaluationEnvironment) }
@@ -70,7 +73,7 @@ private fun executeIfStatement(statement: IfStatement, evaluationEnvironment: En
 private fun executeWhileStatement(statement: WhileStatement, evaluationEnvironment: Environment) {
     while (true) {
         val condition = evaluateExpression(statement.condition, evaluationEnvironment)
-        validateBoolean(condition)
+        validateRuntimeBoolean(condition)
 
         if (!condition.value) break
         executeStatement(statement.body, evaluationEnvironment)
@@ -86,7 +89,7 @@ private fun executeForStatement(statement: ForStatement, evaluationEnvironment: 
             evaluateExpression(it, forEnvironment)
         } ?: BooleanValue(true)
 
-        validateBoolean(condition)
+        validateRuntimeBoolean(condition)
         if (!condition.value) break
 
         executeStatement(statement.body, forEnvironment)
@@ -100,13 +103,35 @@ fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Va
     is UnaryOperatorExpression -> evaluateUnaryOperatorExpression(expr, evaluationEnvironment)
     is BinaryOperatorExpression -> evaluateBinaryOperatorExpression(expr, evaluationEnvironment)
     is AssignmentExpression -> evaluateAssignmentExpression(expr, evaluationEnvironment)
+    is FunctionCallExpression -> evaluateFunctionCallExpression(expr, evaluationEnvironment)
+}
+
+private fun evaluateFunctionCallExpression(
+    expr: FunctionCallExpression,
+    evaluationEnvironment: Environment
+): Value {
+    val functionValue = evaluateExpression(expr.function, evaluationEnvironment)
+    validateRuntime(functionValue is FunctionValue) {
+        "Cannot call expression of type ${functionValue::class}"
+    }
+
+    validateRuntime(functionValue.argNumber == expr.arguments.size) {
+        "Expected ${functionValue.argNumber} arguments, but got ${expr.arguments.size}"
+    }
+
+    val functionEnvironment = Environment(evaluationEnvironment)
+    expr.arguments
+        .map { arg -> evaluateExpression(arg, evaluationEnvironment) }
+        .let(functionValue.argNames::zip)
+        .forEach { (argName, argValue) -> functionEnvironment.createVariable(argName, argValue) }
+
+    executeBlockStatement(functionValue.body, functionEnvironment)
+    return NilValue
 }
 
 private fun evaluateAssignmentExpression(
     expr: AssignmentExpression,
     evaluationEnvironment: Environment
-): Value {
-    val exprValue = evaluateExpression(expr.expr, evaluationEnvironment)
-    evaluationEnvironment.assignVariable(expr.identifier, exprValue)
-    return exprValue
+): Value = evaluateExpression(expr.expr, evaluationEnvironment).also {
+    evaluationEnvironment.assignVariable(expr.identifier, it)
 }

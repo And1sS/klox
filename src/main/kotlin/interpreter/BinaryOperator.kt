@@ -1,14 +1,13 @@
 package interpreter
 
 import exception.EvaluationException
-import parser.ast.AbstractSyntaxNode
 import parser.ast.BinaryOperatorExpression
 import parser.ast.BooleanValue
 import parser.ast.NumericValue
 import parser.ast.OperatorType
 import parser.ast.StringValue
 import parser.ast.Value
-import parser.validateBoolean
+import parser.validateRuntimeBoolean
 import parser.validateGrammar
 import kotlin.reflect.KClass
 
@@ -37,7 +36,7 @@ private fun evaluateLogicalBinaryOperatorExpression(
     evaluationEnvironment: Environment
 ): Value {
     val lhsResult = evaluateExpression(expression.lhs, evaluationEnvironment)
-    validateBoolean(lhsResult)
+    validateRuntimeBoolean(lhsResult)
 
     return if (
         expression.operatorType == OperatorType.Or && lhsResult.value
@@ -46,7 +45,7 @@ private fun evaluateLogicalBinaryOperatorExpression(
         lhsResult
     } else {
         val rhsResult = evaluateExpression(expression.rhs, evaluationEnvironment)
-        validateBoolean(rhsResult)
+        validateRuntimeBoolean(rhsResult)
         rhsResult
     }
 }

@@ -3,12 +3,14 @@ package parser.rules
 import lexer.AndLexerToken
 import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
+import lexer.CommaLexerToken
 import lexer.EOFLexerToken
 import lexer.ElseLexerToken
 import lexer.EqualEqualLexerToken
 import lexer.EqualLexerToken
 import lexer.FalseLexerToken
 import lexer.ForLexerToken
+import lexer.FunLexerToken
 import lexer.GreaterEqualLexerToken
 import lexer.GreaterLexerToken
 import lexer.IfLexerToken
@@ -44,6 +46,7 @@ val identifierRule: Rule = nodeTokenRule(::IdentifierExpression)
 val stringLiteralRule: Rule = nodeTokenRule<StringLiteralLexerToken> { StringValue(it.value) }
 val numberLiteralRule: Rule = nodeTokenRule<NumberLiteralLexerToken> { NumericValue(it.value) }
 
+val funKeywordRule: Rule = symbolicTokenRule<FunLexerToken>()
 val ifKeywordRule: Rule = symbolicTokenRule<IfLexerToken>()
 val elseKeywordRule: Rule = symbolicTokenRule<ElseLexerToken>()
 val orKeywordRule: Rule = symbolicTokenRule<OrLexerToken>()
@@ -57,6 +60,7 @@ val trueRule: Rule = nodeTokenRule<TrueLexerToken> { BooleanValue(true) }
 val falseRule: Rule = nodeTokenRule<FalseLexerToken> { BooleanValue(false) }
 val nilRule: Rule = nodeTokenRule<NilLexerToken> { NilValue }
 
+val commaRule: Rule = symbolicTokenRule<CommaLexerToken>()
 val semicolonRule: Rule = symbolicTokenRule<SemicolonLexerToken>()
 
 val leftBraceRule: Rule = symbolicTokenRule<LeftBraceLexerToken>()

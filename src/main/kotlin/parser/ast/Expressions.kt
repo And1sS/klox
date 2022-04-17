@@ -15,6 +15,7 @@ import lexer.OrLexerToken
 import lexer.PlusLexerToken
 import lexer.SlashLexerToken
 import lexer.StarLexerToken
+import parser.asString
 import kotlin.reflect.KClass
 
 sealed class Expression : AbstractSyntaxNode()
@@ -31,6 +32,17 @@ data class StringValue(val value: String) : Value()
 
 // TODO: implement objects properly
 object ObjectValue : Value()
+
+data class FunctionValue(val argNames: List<IdentifierExpression>, val body: BlockStatement) : Value() {
+    val argNumber = argNames.size
+
+    override fun toString(): String = "FunctionValue(args = $argNames, body = $body)"
+}
+
+data class FunctionCallExpression(
+    val function: Expression,
+    val arguments: List<Expression>
+) : Expression()
 
 data class AssignmentExpression(
     val identifier: IdentifierExpression,

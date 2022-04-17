@@ -1,8 +1,10 @@
 package parser
 
 import exception.EvaluationException
+import org.jetbrains.annotations.Contract
 import parser.ast.BooleanValue
 import parser.ast.Expression
+import parser.ast.FunctionValue
 import parser.ast.NilValue
 import parser.ast.NumericValue
 import parser.ast.ObjectValue
@@ -24,10 +26,11 @@ fun List<ParserToken>.toOperatorTypeAndOperand(): Pair<OperatorType, Expression>
 
 fun Value.asString(): String = when (this) {
     is NilValue -> "nil"
-    is BooleanValue -> this.value.toString()
-    is NumericValue -> this.value.toString()
-    is StringValue -> this.value
-    is ObjectValue -> this.toString()
+    is BooleanValue -> value.toString()
+    is NumericValue -> value.toString()
+    is StringValue -> value
+    is ObjectValue -> toString()
+    is FunctionValue -> toString()
 }
 
 // To enhance list destructuring capabilities
@@ -44,7 +47,16 @@ fun validateGrammar(value: Boolean) {
 
 fun throwInvalidGrammar(): Unit = validateGrammar(false)
 
-fun validateBoolean(value: Value) {
+fun validateRuntime(value: Boolean, errorMessage: () -> String = { "Runtime exception" }) {
+    contract {
+        returns() implies (value)
+    }
+    if (!value) {
+        throw EvaluationException(errorMessage.let { it() })
+    }
+}
+
+fun validateRuntimeBoolean(value: Value) {
     contract {
         returns() implies (value is BooleanValue)
     }

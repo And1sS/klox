@@ -22,7 +22,7 @@ val expressionRule = Rule { ctx ->
 private val parenthesizedRule: Rule = andRule(leftParenRule, expressionRule, rightParenRule) { it[1] }
 
 // primaryExpression -> NUMBER | STRING | "true" | "false" | "nil" | parenthesizedRule | identifier
-private val primaryExpressionRule = orRule(
+val primaryExpressionRule = orRule(
     numberLiteralRule,
     stringLiteralRule,
     trueRule,
@@ -42,8 +42,8 @@ private val intermediateUnaryRule = Rule { ctx ->
     }.match(ctx)
 }
 
-// unaryOperator -> ( "!" | "-" ) unaryOperator | primaryExpression
-private val unaryOperatorRule: Rule = orRule(intermediateUnaryRule, primaryExpressionRule)
+// unaryOperator -> ( "!" | "-" ) unaryOperator | call
+private val unaryOperatorRule: Rule = orRule(intermediateUnaryRule, callRule)
 
 // factor -> unary ( ( "/" | "*" ) unary )*
 private val factorRule: Rule = binaryOperatorRule(unaryOperatorRule, orRule(starRule, slashRule))

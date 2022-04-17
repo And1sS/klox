@@ -1,5 +1,6 @@
 package parser.rules
 
+import parser.Combiner
 import parser.CompositeToken
 import parser.MatchResult
 import parser.Matched
@@ -14,15 +15,19 @@ import parser.validateGrammar
 import parser.zeroOrMoreRule
 
 // binaryOperator -> operand (operator operand)*
-fun binaryOperatorRule(operandRule: Rule, operatorRule: Rule): Rule = Rule { ctx ->
+fun binaryOperatorRule(operandRule: Rule, operatorRule: Rule): Rule =
+    binaryOperatorRule(operandRule, operatorRule, defaultBinaryOperatorCombiner)
+
+fun binaryOperatorRule(operandRule: Rule, operatorRule: Rule, combiner: Combiner): Rule = Rule { ctx ->
     andRule(operandRule, zeroOrMoreRule(andRule(operatorRule, operandRule)))
         .match(ctx)
-        .map(::combineBinaryOperatorResult)
+        .map { matched ->
+            validateGrammar(matched.token is CompositeToken)
+            Matched(combiner(matched.token.tokens), matched.newCtx)
+        }
 }
 
-private fun combineBinaryOperatorResult(matched: Matched): MatchResult {
-    validateGrammar(matched.token is CompositeToken)
-    val tokens = matched.token.tokens
+private val defaultBinaryOperatorCombiner: Combiner = { tokens ->
     var processed: Expression = (tokens[0] as? NodeToken)?.node as? Expression
         ?: throw RuntimeException("Invalid grammar: operator argument is not an expression")
 
@@ -34,7 +39,7 @@ private fun combineBinaryOperatorResult(matched: Matched): MatchResult {
             processed = BinaryOperatorExpression(type, processed, operand)
         }
 
-    return Matched(NodeToken(processed), matched.newCtx)
+    NodeToken(processed)
 }
 
 
