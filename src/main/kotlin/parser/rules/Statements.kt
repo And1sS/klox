@@ -9,7 +9,9 @@ import parser.ast.BlockStatement
 import parser.ast.Expression
 import parser.ast.ExpressionStatement
 import parser.ast.IfStatement
+import parser.ast.NilValue
 import parser.ast.PrintStatement
+import parser.ast.ReturnStatement
 import parser.ast.Statement
 import parser.ast.WhileStatement
 import parser.component6
@@ -33,6 +35,19 @@ val expressionStatementRule: Rule = andRule(expressionRule, semicolonRule) { tok
 
     NodeToken(ExpressionStatement(expressionToken.node))
 }
+
+// returnStatement -> return expression? ";"
+val returnStatementRule: Rule =
+    andRule(returnKeywordRule, optionalRule(expressionRule), semicolonRule) { tokens ->
+        val (_, optionalExpressionToken, _) = tokens
+        validateGrammar(optionalExpressionToken is OptionalToken)
+
+        val returnResult: Expression = optionalExpressionToken.token?.let { expressionToken ->
+            validateGrammar(expressionToken is NodeToken && expressionToken.node is Expression)
+            expressionToken.node
+        } ?: NilValue
+        NodeToken(ReturnStatement(returnResult))
+    }
 
 // blockStatement -> "{" declaration* "}"
 val blockStatementRule: Rule =
@@ -82,12 +97,14 @@ val whileStatementRule: Rule = andRule(
     NodeToken(WhileStatement(conditionToken.node, bodyToken.node))
 }
 
-// statement -> expressionStatement | printStatement | blockStatement | ifStatement | whileStatement | forStatement
+// statement -> expressionStatement | printStatement | blockStatement
+//                  | ifStatement | whileStatement | forStatement | returnStatement
 val statementRule: Rule = orRule(
     expressionStatementRule,
     printStatementRule,
     blockStatementRule,
     ifStatementRule,
     whileStatementRule,
-    forStatementRule
+    forStatementRule,
+    returnStatementRule
 )

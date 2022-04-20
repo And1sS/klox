@@ -1,11 +1,9 @@
 package parser.rules
 
-import lexer.CommaLexerToken
 import parser.CompositeToken
 import parser.NodeToken
 import parser.OptionalToken
 import parser.Rule
-import parser.SymbolicToken
 import parser.andRule
 import parser.ast.BlockStatement
 import parser.ast.Expression
@@ -14,18 +12,13 @@ import parser.ast.FunctionValue
 import parser.ast.IdentifierExpression
 import parser.ast.VarDeclaration
 import parser.component6
+import parser.listRule
 import parser.optionalRule
 import parser.validateGrammar
 import parser.zeroOrMoreRule
 
-// TODO: consider declaring "listRule"
 // argumentsDeclaration -> identifier ( ","  identifier )
-val argumentsDeclarationRule: Rule = binaryOperatorRule(identifierRule, commaRule) { tokens ->
-    val arguments = tokens.filterNot { it is SymbolicToken && it.lexerToken is CommaLexerToken }
-    validateGrammar(arguments.all { it is NodeToken && it.node is IdentifierExpression })
-
-    CompositeToken(arguments)
-}
+val argumentsDeclarationRule: Rule = listRule<IdentifierExpression>(identifierRule)
 
 // in case of default block statement throws NPE
 // hack to overcome circular dependency
@@ -51,12 +44,7 @@ val functionDeclarationRule: Rule =
     }
 
 // arguments -> expression ( "," expression )*
-private val argumentsRule: Rule = binaryOperatorRule(expressionRule, commaRule) { tokens ->
-    val arguments = tokens.filterNot { it is SymbolicToken && it.lexerToken is CommaLexerToken }
-    validateGrammar(arguments.all { it is NodeToken && it.node is Expression })
-
-    CompositeToken(arguments)
-}
+private val argumentsRule: Rule = listRule<Expression>(expressionRule)
 
 // call -> primary ( "(" arguments? ")" )*
 val callRule: Rule =

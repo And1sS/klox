@@ -1,8 +1,11 @@
 package parser
 
+import lexer.CommaLexerToken
 import lexer.LexerToken
 import parser.ast.AbstractSyntaxNode
 import parser.ast.Declaration
+import parser.rules.binaryOperatorRule
+import parser.rules.commaRule
 
 data class ParsingContext(val tokens: List<LexerToken>, val currentIndex: Int) {
     fun move(amount: Int): ParsingContext =
@@ -108,6 +111,14 @@ fun zeroOrMoreRule(rule: Rule, combine: Combiner): Rule = Rule { ctx ->
 
 fun zeroOrMoreRule(rule: Rule): Rule =
     zeroOrMoreRule(rule, flatteningCombiner)
+
+inline fun <reified T> listRule(operandRule: Rule): Rule =
+    binaryOperatorRule(operandRule, commaRule) { tokens ->
+        val arguments = tokens.filterNot { it is SymbolicToken && it.lexerToken is CommaLexerToken }
+        validateGrammar(arguments.all { it is NodeToken && it.node is T })
+
+        CompositeToken(arguments)
+    }
 
 inline fun <reified T : LexerToken> symbolicTokenRule(): Rule =
     singleTokenRule<T, SymbolicToken>(::SymbolicToken)

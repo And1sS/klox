@@ -9,6 +9,8 @@ data class VarDeclaration(
 
 sealed class Statement : Declaration()
 
+data class ReturnStatement(val expr: Expression) : Statement()
+
 data class IfStatement(
     val condition: Expression,
     val body: Statement,

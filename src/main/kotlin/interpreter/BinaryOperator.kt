@@ -7,8 +7,8 @@ import parser.ast.NumericValue
 import parser.ast.OperatorType
 import parser.ast.StringValue
 import parser.ast.Value
-import parser.validateRuntimeBoolean
 import parser.validateGrammar
+import parser.validateRuntimeBoolean
 import kotlin.reflect.KClass
 
 fun evaluateBinaryOperatorExpression(
@@ -16,7 +16,7 @@ fun evaluateBinaryOperatorExpression(
     evaluationEnvironment: Environment
 ): Value {
     val operatorType = expression.operatorType
-    if (operatorType == OperatorType.And || operatorType == OperatorType.Or) {
+    if (operatorType in setOf(OperatorType.And, OperatorType.Or)) {
         return evaluateLogicalBinaryOperatorExpression(expression, evaluationEnvironment)
     }
 
@@ -39,8 +39,8 @@ private fun evaluateLogicalBinaryOperatorExpression(
     validateRuntimeBoolean(lhsResult)
 
     return if (
-        expression.operatorType == OperatorType.Or && lhsResult.value
-        && expression.operatorType == OperatorType.And && !lhsResult.value
+        (expression.operatorType == OperatorType.Or && lhsResult.value)
+        || (expression.operatorType == OperatorType.And && !lhsResult.value)
     ) {
         lhsResult
     } else {

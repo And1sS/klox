@@ -24,6 +24,7 @@ import lexer.NumberLiteralLexerToken
 import lexer.OrLexerToken
 import lexer.PlusLexerToken
 import lexer.PrintLexerToken
+import lexer.ReturnLexerToken
 import lexer.RightBraceLexerToken
 import lexer.RightParenLexerToken
 import lexer.SemicolonLexerToken
@@ -47,6 +48,7 @@ val stringLiteralRule: Rule = nodeTokenRule<StringLiteralLexerToken> { StringVal
 val numberLiteralRule: Rule = nodeTokenRule<NumberLiteralLexerToken> { NumericValue(it.value) }
 
 val funKeywordRule: Rule = symbolicTokenRule<FunLexerToken>()
+val returnKeywordRule: Rule = symbolicTokenRule<ReturnLexerToken>()
 val ifKeywordRule: Rule = symbolicTokenRule<IfLexerToken>()
 val elseKeywordRule: Rule = symbolicTokenRule<ElseLexerToken>()
 val orKeywordRule: Rule = symbolicTokenRule<OrLexerToken>()
