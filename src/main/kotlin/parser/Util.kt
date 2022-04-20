@@ -1,6 +1,5 @@
 package parser
 
-import exception.EvaluationException
 import ast.BooleanValue
 import ast.Expression
 import ast.FunctionValue
@@ -11,6 +10,7 @@ import ast.OperatorType
 import ast.StringValue
 import ast.Value
 import ast.operatorMapping
+import exception.EvaluationException
 import kotlin.contracts.contract
 
 fun List<ParserToken>.toOperatorTypeAndOperand(): Pair<OperatorType, Expression> {

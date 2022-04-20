@@ -6,6 +6,8 @@ import ast.Expression
 import ast.FunctionCallExpression
 import ast.FunctionValue
 import ast.IdentifierExpression
+import ast.LoxFunctionValue
+import ast.NativeFunctionValue
 import ast.NilValue
 import ast.UnaryOperatorExpression
 import ast.Value
@@ -33,10 +35,23 @@ private fun evaluateFunctionCallExpression(
         "Expected ${functionValue.argNumber} arguments, but got ${expr.arguments.size}"
     }
 
-    val functionEnvironment = Environment(evaluationEnvironment)
-    expr.arguments
+    val argumentValues: List<Value> = expr.arguments
         .map { arg -> evaluateExpression(arg, evaluationEnvironment) }
-        .let(functionValue.argNames::zip)
+
+    return when (functionValue) {
+        is LoxFunctionValue -> callLoxFunction(functionValue, argumentValues, evaluationEnvironment)
+        is NativeFunctionValue -> functionValue.call(argumentValues)
+    }
+}
+
+private fun callLoxFunction(
+    functionValue: LoxFunctionValue,
+    argumentValues: List<Value>,
+    evaluationEnvironment: Environment
+): Value {
+    val functionEnvironment = Environment(evaluationEnvironment)
+
+    argumentValues.let(functionValue.argNames::zip)
         .forEach { (argName, argValue) -> functionEnvironment.createVariable(argName, argValue) }
 
     return when (val result = executeBlockStatement(functionValue.body, functionEnvironment)) {

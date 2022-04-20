@@ -6,7 +6,6 @@ import lexer.BangLexerToken
 import lexer.EqualEqualLexerToken
 import lexer.GreaterEqualLexerToken
 import lexer.GreaterLexerToken
-import lexer.IdentifierLexerToken
 import lexer.LessEqualLexerToken
 import lexer.LessLexerToken
 import lexer.LexerToken
@@ -32,10 +31,22 @@ data class StringValue(val value: String) : Value()
 // TODO: implement objects properly
 object ObjectValue : Value()
 
-data class FunctionValue(val argNames: List<IdentifierExpression>, val body: BlockStatement) : Value() {
-    val argNumber = argNames.size
+// TODO: add lambda functions
+sealed class FunctionValue(val argNumber: Int) : Value()
 
-    override fun toString(): String = "FunctionValue(args = $argNames, body = $body)"
+data class LoxFunctionValue(
+    val argNames: List<IdentifierExpression>,
+    val body: BlockStatement
+) : FunctionValue(argNames.size) {
+    override fun toString(): String = "LoxFunctionValue(args = $argNames, body = $body)"
+}
+
+class NativeFunctionValue(
+    val name: String,
+    argNumber: Int,
+    val call: (List<Value>) -> Value
+) : FunctionValue(argNumber) {
+    override fun toString(): String = "NativeFunctionValue(name = $name, argNumber = $argNumber)"
 }
 
 data class FunctionCallExpression(
@@ -59,9 +70,7 @@ data class BinaryOperatorExpression(
     val rhs: Expression
 ) : Expression()
 
-data class IdentifierExpression private constructor(val name: String) : Expression() {
-    constructor(token: IdentifierLexerToken) : this(token.name)
-}
+data class IdentifierExpression(val name: String) : Expression()
 
 enum class OperatorType {
     Bang,

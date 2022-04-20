@@ -15,7 +15,10 @@ fun main() {
                 }
             }
             
-            print fib(40);
+            var before = clock();
+            print fib(30);
+            var after = clock();
+            print after - before;
             """
     interpret(program)
 }

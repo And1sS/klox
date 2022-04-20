@@ -29,6 +29,7 @@ fun interpret(program: String) {
     validateGrammar(programToken is ProgramToken)
 
     val globalEnvironment = Environment()
+    importNativeFunctions(globalEnvironment)
     for (declaration in programToken.declarations) {
         executeDeclaration(declaration, globalEnvironment)
     }
@@ -43,7 +44,9 @@ fun liveInterpret() {
     val liveInterpretRule: Rule = orRule(andRule(expressionRule, eofRule) { it[0] }, programRule)
 
     println("Line interpreting session started")
+
     val globalEnvironment = Environment()
+    importNativeFunctions(globalEnvironment)
 
     while (true) {
         val line = readln()

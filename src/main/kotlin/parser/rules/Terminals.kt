@@ -1,5 +1,10 @@
 package parser.rules
 
+import ast.BooleanValue
+import ast.IdentifierExpression
+import ast.NilValue
+import ast.NumericValue
+import ast.StringValue
 import lexer.AndLexerToken
 import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
@@ -13,6 +18,7 @@ import lexer.ForLexerToken
 import lexer.FunLexerToken
 import lexer.GreaterEqualLexerToken
 import lexer.GreaterLexerToken
+import lexer.IdentifierLexerToken
 import lexer.IfLexerToken
 import lexer.LeftBraceLexerToken
 import lexer.LeftParenLexerToken
@@ -35,15 +41,10 @@ import lexer.TrueLexerToken
 import lexer.VarLexerToken
 import lexer.WhileLexerToken
 import parser.Rule
-import ast.BooleanValue
-import ast.IdentifierExpression
-import ast.NilValue
-import ast.NumericValue
-import ast.StringValue
 import parser.nodeTokenRule
 import parser.symbolicTokenRule
 
-val identifierRule: Rule = nodeTokenRule(::IdentifierExpression)
+val identifierRule: Rule = nodeTokenRule<IdentifierLexerToken> { IdentifierExpression(it.name) }
 val stringLiteralRule: Rule = nodeTokenRule<StringLiteralLexerToken> { StringValue(it.value) }
 val numberLiteralRule: Rule = nodeTokenRule<NumberLiteralLexerToken> { NumericValue(it.value) }
 

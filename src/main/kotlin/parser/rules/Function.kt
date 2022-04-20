@@ -8,7 +8,7 @@ import parser.andRule
 import ast.BlockStatement
 import ast.Expression
 import ast.FunctionCallExpression
-import ast.FunctionValue
+import ast.LoxFunctionValue
 import ast.IdentifierExpression
 import ast.VarDeclaration
 import parser.component6
@@ -38,7 +38,7 @@ val functionDeclarationRule: Rule =
         validateGrammar(optionalArgumentsDeclarationToken is OptionalToken)
         validateGrammar(bodyToken is NodeToken && bodyToken.node is BlockStatement)
 
-        val function = FunctionValue(optionalArgumentsDeclarationToken.asExpressionList(), bodyToken.node)
+        val function = LoxFunctionValue(optionalArgumentsDeclarationToken.asExpressionList(), bodyToken.node)
         VarDeclaration(functionNameToken.node, function)
             .let(::NodeToken)
     }
