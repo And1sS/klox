@@ -7,8 +7,8 @@ import parser.ProgramToken
 import parser.Rule
 import parser.Unmatched
 import parser.andRule
-import parser.ast.Expression
-import parser.ast.PrintStatement
+import ast.Expression
+import ast.PrintStatement
 import parser.orRule
 import parser.rules.eofRule
 import parser.rules.expressionRule

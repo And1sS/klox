@@ -1,8 +1,8 @@
 package interpreter
 
 import exception.EvaluationException
-import parser.ast.IdentifierExpression
-import parser.ast.Value
+import ast.IdentifierExpression
+import ast.Value
 
 
 class Environment(private val parentEnvironment: Environment?) {

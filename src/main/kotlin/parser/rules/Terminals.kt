@@ -35,11 +35,11 @@ import lexer.TrueLexerToken
 import lexer.VarLexerToken
 import lexer.WhileLexerToken
 import parser.Rule
-import parser.ast.BooleanValue
-import parser.ast.IdentifierExpression
-import parser.ast.NilValue
-import parser.ast.NumericValue
-import parser.ast.StringValue
+import ast.BooleanValue
+import ast.IdentifierExpression
+import ast.NilValue
+import ast.NumericValue
+import ast.StringValue
 import parser.nodeTokenRule
 import parser.symbolicTokenRule
 

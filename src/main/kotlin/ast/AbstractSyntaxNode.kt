@@ -1,3 +1,3 @@
-package parser.ast
+package ast
 
 sealed class AbstractSyntaxNode()

@@ -1,14 +1,14 @@
 package interpreter
 
-import parser.ast.AssignmentExpression
-import parser.ast.BinaryOperatorExpression
-import parser.ast.Expression
-import parser.ast.FunctionCallExpression
-import parser.ast.FunctionValue
-import parser.ast.IdentifierExpression
-import parser.ast.NilValue
-import parser.ast.UnaryOperatorExpression
-import parser.ast.Value
+import ast.AssignmentExpression
+import ast.BinaryOperatorExpression
+import ast.Expression
+import ast.FunctionCallExpression
+import ast.FunctionValue
+import ast.IdentifierExpression
+import ast.NilValue
+import ast.UnaryOperatorExpression
+import ast.Value
 import parser.validateRuntime
 
 fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Value = when (expr) {

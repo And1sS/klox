@@ -15,7 +15,7 @@ fun main() {
                 }
             }
             
-            print_n_first_fib(10);
+            print fib(40);
             """
     interpret(program)
 }

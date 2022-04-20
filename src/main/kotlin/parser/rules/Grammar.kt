@@ -4,7 +4,7 @@ import parser.NodeToken
 import parser.ParserToken
 import parser.ProgramToken
 import parser.Rule
-import parser.ast.Declaration
+import ast.Declaration
 import parser.orRule
 import parser.validateGrammar
 import parser.zeroOrMoreRule

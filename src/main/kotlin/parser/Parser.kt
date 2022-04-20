@@ -2,8 +2,8 @@ package parser
 
 import lexer.CommaLexerToken
 import lexer.LexerToken
-import parser.ast.AbstractSyntaxNode
-import parser.ast.Declaration
+import ast.AbstractSyntaxNode
+import ast.Declaration
 import parser.rules.binaryOperatorRule
 import parser.rules.commaRule
 

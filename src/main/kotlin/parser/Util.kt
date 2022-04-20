@@ -1,17 +1,16 @@
 package parser
 
 import exception.EvaluationException
-import org.jetbrains.annotations.Contract
-import parser.ast.BooleanValue
-import parser.ast.Expression
-import parser.ast.FunctionValue
-import parser.ast.NilValue
-import parser.ast.NumericValue
-import parser.ast.ObjectValue
-import parser.ast.OperatorType
-import parser.ast.StringValue
-import parser.ast.Value
-import parser.ast.operatorMapping
+import ast.BooleanValue
+import ast.Expression
+import ast.FunctionValue
+import ast.NilValue
+import ast.NumericValue
+import ast.ObjectValue
+import ast.OperatorType
+import ast.StringValue
+import ast.Value
+import ast.operatorMapping
 import kotlin.contracts.contract
 
 fun List<ParserToken>.toOperatorTypeAndOperand(): Pair<OperatorType, Expression> {

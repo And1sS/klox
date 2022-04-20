@@ -6,11 +6,11 @@ import parser.OptionalToken
 import parser.Rule
 import parser.SymbolicToken
 import parser.andRule
-import parser.ast.Expression
-import parser.ast.ExpressionStatement
-import parser.ast.ForStatement
-import parser.ast.Statement
-import parser.ast.VarDeclaration
+import ast.Expression
+import ast.ExpressionStatement
+import ast.ForStatement
+import ast.Statement
+import ast.VarDeclaration
 import parser.component6
 import parser.component7
 import parser.component8

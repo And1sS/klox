@@ -1,19 +1,19 @@
 package interpreter
 
 import parser.asString
-import parser.ast.BlockStatement
-import parser.ast.BooleanValue
-import parser.ast.Declaration
-import parser.ast.ExpressionStatement
-import parser.ast.ForStatement
-import parser.ast.IfStatement
-import parser.ast.NilValue
-import parser.ast.PrintStatement
-import parser.ast.ReturnStatement
-import parser.ast.Statement
-import parser.ast.Value
-import parser.ast.VarDeclaration
-import parser.ast.WhileStatement
+import ast.BlockStatement
+import ast.BooleanValue
+import ast.Declaration
+import ast.ExpressionStatement
+import ast.ForStatement
+import ast.IfStatement
+import ast.NilValue
+import ast.PrintStatement
+import ast.ReturnStatement
+import ast.Statement
+import ast.Value
+import ast.VarDeclaration
+import ast.WhileStatement
 import parser.validateRuntimeBoolean
 
 // TODO: think of wrapping inner classes

@@ -4,10 +4,10 @@ import parser.Combiner
 import parser.NodeToken
 import parser.Rule
 import parser.andRule
-import parser.ast.AssignmentExpression
-import parser.ast.Expression
-import parser.ast.IdentifierExpression
-import parser.ast.UnaryOperatorExpression
+import ast.AssignmentExpression
+import ast.Expression
+import ast.IdentifierExpression
+import ast.UnaryOperatorExpression
 import parser.orRule
 import parser.toOperatorTypeAndOperand
 import parser.validateGrammar

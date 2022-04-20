@@ -1,4 +1,4 @@
-package parser.ast
+package ast
 
 import lexer.AndLexerToken
 import lexer.BangEqualLexerToken
@@ -15,7 +15,6 @@ import lexer.OrLexerToken
 import lexer.PlusLexerToken
 import lexer.SlashLexerToken
 import lexer.StarLexerToken
-import parser.asString
 import kotlin.reflect.KClass
 
 sealed class Expression : AbstractSyntaxNode()

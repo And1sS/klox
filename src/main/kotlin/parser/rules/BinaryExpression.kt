@@ -8,8 +8,8 @@ import parser.NodeToken
 import parser.Rule
 import parser.Unmatched
 import parser.andRule
-import parser.ast.BinaryOperatorExpression
-import parser.ast.Expression
+import ast.BinaryOperatorExpression
+import ast.Expression
 import parser.toOperatorTypeAndOperand
 import parser.validateGrammar
 import parser.zeroOrMoreRule

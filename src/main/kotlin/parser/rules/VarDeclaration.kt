@@ -1,12 +1,12 @@
 package parser.rules
 
 import parser.Combiner
-import parser.ast.Expression
-import parser.ast.IdentifierExpression
+import ast.Expression
+import ast.IdentifierExpression
 import parser.NodeToken
 import parser.OptionalToken
 import parser.Rule
-import parser.ast.VarDeclaration
+import ast.VarDeclaration
 import parser.andRule
 import parser.optionalRule
 import parser.validateGrammar

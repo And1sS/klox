@@ -1,12 +1,12 @@
 package interpreter
 
 import exception.EvaluationException
-import parser.ast.BinaryOperatorExpression
-import parser.ast.BooleanValue
-import parser.ast.NumericValue
-import parser.ast.OperatorType
-import parser.ast.StringValue
-import parser.ast.Value
+import ast.BinaryOperatorExpression
+import ast.BooleanValue
+import ast.NumericValue
+import ast.OperatorType
+import ast.StringValue
+import ast.Value
 import parser.validateGrammar
 import parser.validateRuntimeBoolean
 import kotlin.reflect.KClass
