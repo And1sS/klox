@@ -44,7 +44,7 @@ val functionDeclarationRule: Rule =
         validateGrammar(bodyToken is NodeToken && bodyToken.node is BlockStatement)
 
         FunctionDeclaration(
-            functionNameToken.node,
+            functionNameToken.node.name,
             optionalArgumentsDeclarationToken.asExpressionList(),
             bodyToken.node
         ).let(::NodeToken)

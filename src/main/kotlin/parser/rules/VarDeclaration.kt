@@ -36,7 +36,7 @@ private val varDeclarationCombiner: Combiner = { tokens ->
         optionalToken.token.node
     }
 
-    NodeToken(VarDeclaration(identifierToken.node, valueExpression))
+    NodeToken(VarDeclaration(identifierToken.node.name, valueExpression))
 }
 
 private val assignmentCombiner: Combiner = { tokens ->

@@ -58,7 +58,7 @@ private fun callLoxFunction(
     val functionEnvironment = Environment(functionValue.capturingEnvironment)
 
     argumentValues.let(functionValue.argNames::zip)
-        .forEach { (argName, argValue) -> functionEnvironment.createVariable(argName.name, argValue) }
+        .forEach { (argName, argValue) -> functionEnvironment.createVariable(argName, argValue) }
 
     return when (val result = executeBlockStatement(functionValue.body, functionEnvironment)) {
         is Nothing -> NilValue

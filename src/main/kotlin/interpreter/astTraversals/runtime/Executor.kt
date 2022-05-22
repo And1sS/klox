@@ -42,7 +42,7 @@ private fun executeVarDeclaration(
         evaluateExpression(it, evaluationEnvironment)
     } ?: NilValue
 
-    evaluationEnvironment.createVariable(declaration.identifier.name, variableValue)
+    evaluationEnvironment.createVariable(declaration.identifier, variableValue)
 
     return Nothing
 }
@@ -53,7 +53,7 @@ private fun executeFunctionDeclaration(
 ): ExecutionResult {
     val functionValue = LoxFunctionValue(declaration.argNames, declaration.body, evaluationEnvironment)
 
-    evaluationEnvironment.createVariable(declaration.identifier.name, functionValue)
+    evaluationEnvironment.createVariable(declaration.identifier, functionValue)
 
     return Nothing
 }
