@@ -1,12 +1,11 @@
 package interpreter
 
-import ast.IdentifierExpression
 import ast.NativeFunctionValue
 import ast.NumericValue
 
 fun importNativeFunctions(environment: Environment) {
     for (function in nativeFunctions) {
-        environment.createVariable(IdentifierExpression(function.name), function)
+        environment.createVariable(function.name, function)
     }
 }
 

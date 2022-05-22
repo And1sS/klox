@@ -9,6 +9,8 @@ import parser.Unmatched
 import parser.andRule
 import ast.Expression
 import ast.PrintStatement
+import interpreter.astTraversals.runtime.executeDeclaration
+import interpreter.astTraversals.semantic.resolveDeclaration
 import parser.orRule
 import parser.rules.eofRule
 import parser.rules.expressionRule
@@ -28,9 +30,16 @@ fun interpret(program: String) {
     val programToken = matchResult.token
     validateGrammar(programToken is ProgramToken)
 
+    val resolutionGlobalEnvironment = Environment()
+    importNativeFunctions(resolutionGlobalEnvironment)
+
+    val resolvedDeclarations = programToken.declarations.map { declaration ->
+        resolveDeclaration(declaration, resolutionGlobalEnvironment)
+    }
+
     val globalEnvironment = Environment()
     importNativeFunctions(globalEnvironment)
-    for (declaration in programToken.declarations) {
+    for (declaration in resolvedDeclarations) {
         executeDeclaration(declaration, globalEnvironment)
     }
 

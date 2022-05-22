@@ -1,32 +1,57 @@
 package interpreter
 
-import exception.EvaluationException
 import ast.IdentifierExpression
+import ast.ResolvedIdentifierExpression
+import ast.UnresolvedIdentifierExpression
 import ast.Value
-
+import exception.EvaluationException
+import exception.SemanticError
 
 class Environment(private val parentEnvironment: Environment?) {
-    private val variables: MutableMap<IdentifierExpression, Value> = mutableMapOf()
+    private val variables: MutableMap<String, Value> = mutableMapOf()
 
     constructor() : this(null)
 
-    fun createVariable(name: IdentifierExpression, value: Value) {
+    fun createVariable(name: String, value: Value) {
         variables[name] = value
     }
 
-    fun assignVariable(name: IdentifierExpression, value: Value) {
-        if (variables.containsKey(name)) {
-            variables[name] = value
-        } else if (parentEnvironment != null) {
-            parentEnvironment.assignVariable(name, value)
-        } else {
-            throw EvaluationException("Undefined variable: ${name.name}")
+    fun assignVariable(identifier: ResolvedIdentifierExpression, value: Value) {
+        var currentEnvironment = this
+        for (i in 1..identifier.depth) {
+            currentEnvironment = currentEnvironment.parentEnvironment
+                ?: throw EvaluationException("Undefined variable: ${identifier.name}")
         }
+
+        if (identifier.name in currentEnvironment.variables)
+            throw EvaluationException("Undefined variable: ${identifier.name}")
+        currentEnvironment.variables[identifier.name] = value
     }
 
-    fun getVariableValue(name: IdentifierExpression): Value =
-        variables.getOrElse(name) {
-            parentEnvironment?.getVariableValue(name)
-                ?: throw EvaluationException("Undefined variable: ${name.name}")
+    fun getVariableValue(identifier: ResolvedIdentifierExpression): Value {
+        var currentEnvironment = this
+        for (i in 1..identifier.depth) {
+            currentEnvironment = currentEnvironment.parentEnvironment
+                ?: throw EvaluationException("Undefined variable: ${identifier.name}")
         }
+
+        return currentEnvironment.variables[identifier.name]
+            ?: throw EvaluationException("Undefined variable: ${identifier.name}")
+    }
+
+    fun resolveVariable(identifier: UnresolvedIdentifierExpression): ResolvedIdentifierExpression {
+        var i = 0
+        var currentEnvironment: Environment? = this
+        while (currentEnvironment != null) {
+
+            if (identifier.name in currentEnvironment.variables) {
+                return ResolvedIdentifierExpression(identifier.name, i)
+            }
+
+            currentEnvironment = currentEnvironment.parentEnvironment
+            i++
+        }
+
+        throw SemanticError("Unresolved variable ${identifier.name}")
+    }
 }

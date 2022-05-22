@@ -1,5 +1,6 @@
 package ast
 
+import interpreter.Environment
 import lexer.AndLexerToken
 import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
@@ -35,8 +36,9 @@ object ObjectValue : Value()
 sealed class FunctionValue(val argNumber: Int) : Value()
 
 data class LoxFunctionValue(
-    val argNames: List<IdentifierExpression>,
-    val body: BlockStatement
+    val argNames: List<String>,
+    val body: BlockStatement,
+    val capturingEnvironment: Environment
 ) : FunctionValue(argNames.size) {
     override fun toString(): String = "LoxFunctionValue(args = $argNames, body = $body)"
 }
@@ -70,7 +72,9 @@ data class BinaryOperatorExpression(
     val rhs: Expression
 ) : Expression()
 
-data class IdentifierExpression(val name: String) : Expression()
+sealed class IdentifierExpression(val name: String) : Expression()
+class UnresolvedIdentifierExpression(name: String) : IdentifierExpression(name)
+class ResolvedIdentifierExpression(name: String, val depth: Int) : IdentifierExpression(name)
 
 enum class OperatorType {
     Bang,

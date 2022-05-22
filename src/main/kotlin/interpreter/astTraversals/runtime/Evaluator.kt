@@ -1,4 +1,4 @@
-package interpreter
+package interpreter.astTraversals.runtime
 
 import ast.AssignmentExpression
 import ast.BinaryOperatorExpression
@@ -9,13 +9,20 @@ import ast.IdentifierExpression
 import ast.LoxFunctionValue
 import ast.NativeFunctionValue
 import ast.NilValue
+import ast.ResolvedIdentifierExpression
 import ast.UnaryOperatorExpression
+import ast.UnresolvedIdentifierExpression
 import ast.Value
+import exception.EvaluationException
+import interpreter.Environment
 import parser.validateRuntime
 
 fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Value = when (expr) {
     is Value -> expr
-    is IdentifierExpression -> evaluationEnvironment.getVariableValue(expr)
+    // this branch shouldn't have been reached
+    is UnresolvedIdentifierExpression ->
+        throw EvaluationException("Trying to evaluate unresolved variable")
+    is ResolvedIdentifierExpression -> evaluationEnvironment.getVariableValue(expr)
     is UnaryOperatorExpression -> evaluateUnaryOperatorExpression(expr, evaluationEnvironment)
     is BinaryOperatorExpression -> evaluateBinaryOperatorExpression(expr, evaluationEnvironment)
     is AssignmentExpression -> evaluateAssignmentExpression(expr, evaluationEnvironment)
@@ -39,20 +46,19 @@ private fun evaluateFunctionCallExpression(
         .map { arg -> evaluateExpression(arg, evaluationEnvironment) }
 
     return when (functionValue) {
-        is LoxFunctionValue -> callLoxFunction(functionValue, argumentValues, evaluationEnvironment)
+        is LoxFunctionValue -> callLoxFunction(functionValue, argumentValues)
         is NativeFunctionValue -> functionValue.call(argumentValues)
     }
 }
 
 private fun callLoxFunction(
     functionValue: LoxFunctionValue,
-    argumentValues: List<Value>,
-    evaluationEnvironment: Environment
+    argumentValues: List<Value>
 ): Value {
-    val functionEnvironment = Environment(evaluationEnvironment)
+    val functionEnvironment = Environment(functionValue.capturingEnvironment)
 
     argumentValues.let(functionValue.argNames::zip)
-        .forEach { (argName, argValue) -> functionEnvironment.createVariable(argName, argValue) }
+        .forEach { (argName, argValue) -> functionEnvironment.createVariable(argName.name, argValue) }
 
     return when (val result = executeBlockStatement(functionValue.body, functionEnvironment)) {
         is Nothing -> NilValue
@@ -64,5 +70,8 @@ private fun evaluateAssignmentExpression(
     expr: AssignmentExpression,
     evaluationEnvironment: Environment
 ): Value = evaluateExpression(expr.expr, evaluationEnvironment).also {
+    require(expr.identifier is ResolvedIdentifierExpression) {
+        "This branch shouldn't have been reached"
+    }
     evaluationEnvironment.assignVariable(expr.identifier, it)
 }

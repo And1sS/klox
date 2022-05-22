@@ -8,8 +8,10 @@ import parser.andRule
 import ast.BlockStatement
 import ast.Expression
 import ast.FunctionCallExpression
+import ast.FunctionDeclaration
 import ast.LoxFunctionValue
 import ast.IdentifierExpression
+import ast.UnresolvedIdentifierExpression
 import ast.VarDeclaration
 import parser.component6
 import parser.listRule
@@ -18,7 +20,7 @@ import parser.validateGrammar
 import parser.zeroOrMoreRule
 
 // argumentsDeclaration -> identifier ( ","  identifier )
-val argumentsDeclarationRule: Rule = listRule<IdentifierExpression>(identifierRule)
+val argumentsDeclarationRule: Rule = listRule<UnresolvedIdentifierExpression>(identifierRule)
 
 // in case of default block statement throws NPE
 // hack to overcome circular dependency
@@ -34,13 +36,18 @@ val functionDeclarationRule: Rule =
         intermediateBlockStatementRule
     ) { tokens ->
         val (_, functionNameToken, _, optionalArgumentsDeclarationToken, _, bodyToken) = tokens
-        validateGrammar(functionNameToken is NodeToken && functionNameToken.node is IdentifierExpression)
+        validateGrammar(
+            functionNameToken is NodeToken
+                    && functionNameToken.node is UnresolvedIdentifierExpression
+        )
         validateGrammar(optionalArgumentsDeclarationToken is OptionalToken)
         validateGrammar(bodyToken is NodeToken && bodyToken.node is BlockStatement)
 
-        val function = LoxFunctionValue(optionalArgumentsDeclarationToken.asExpressionList(), bodyToken.node)
-        VarDeclaration(functionNameToken.node, function)
-            .let(::NodeToken)
+        FunctionDeclaration(
+            functionNameToken.node,
+            optionalArgumentsDeclarationToken.asExpressionList(),
+            bodyToken.node
+        ).let(::NodeToken)
     }
 
 // arguments -> expression ( "," expression )*

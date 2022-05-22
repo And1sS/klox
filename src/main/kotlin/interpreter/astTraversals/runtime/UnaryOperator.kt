@@ -1,4 +1,4 @@
-package interpreter
+package interpreter.astTraversals.runtime
 
 import exception.EvaluationException
 import ast.BooleanValue
@@ -6,6 +6,7 @@ import ast.NumericValue
 import ast.OperatorType
 import ast.UnaryOperatorExpression
 import ast.Value
+import interpreter.Environment
 import parser.validateGrammar
 import kotlin.reflect.KClass
 

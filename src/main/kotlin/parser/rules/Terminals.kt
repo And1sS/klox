@@ -5,6 +5,7 @@ import ast.IdentifierExpression
 import ast.NilValue
 import ast.NumericValue
 import ast.StringValue
+import ast.UnresolvedIdentifierExpression
 import lexer.AndLexerToken
 import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
@@ -44,7 +45,7 @@ import parser.Rule
 import parser.nodeTokenRule
 import parser.symbolicTokenRule
 
-val identifierRule: Rule = nodeTokenRule<IdentifierLexerToken> { IdentifierExpression(it.name) }
+val identifierRule: Rule = nodeTokenRule<IdentifierLexerToken> { UnresolvedIdentifierExpression(it.name) }
 val stringLiteralRule: Rule = nodeTokenRule<StringLiteralLexerToken> { StringValue(it.value) }
 val numberLiteralRule: Rule = nodeTokenRule<NumberLiteralLexerToken> { NumericValue(it.value) }
 

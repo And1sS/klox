@@ -1,4 +1,4 @@
-package interpreter
+package interpreter.astTraversals.runtime
 
 import parser.asString
 import ast.BlockStatement
@@ -6,7 +6,9 @@ import ast.BooleanValue
 import ast.Declaration
 import ast.ExpressionStatement
 import ast.ForStatement
+import ast.FunctionDeclaration
 import ast.IfStatement
+import ast.LoxFunctionValue
 import ast.NilValue
 import ast.PrintStatement
 import ast.ReturnStatement
@@ -14,6 +16,7 @@ import ast.Statement
 import ast.Value
 import ast.VarDeclaration
 import ast.WhileStatement
+import interpreter.Environment
 import parser.validateRuntimeBoolean
 
 // TODO: think of wrapping inner classes
@@ -27,6 +30,7 @@ fun executeDeclaration(
     evaluationEnvironment: Environment
 ): ExecutionResult = when (declaration) {
     is VarDeclaration -> executeVarDeclaration(declaration, evaluationEnvironment)
+    is FunctionDeclaration -> executeFunctionDeclaration(declaration, evaluationEnvironment)
     is Statement -> executeStatement(declaration, evaluationEnvironment)
 }
 
@@ -34,11 +38,22 @@ private fun executeVarDeclaration(
     declaration: VarDeclaration,
     evaluationEnvironment: Environment
 ): ExecutionResult {
-    val variableValue = declaration.value?.let {
+    val variableValue = declaration.initializationExpression?.let {
         evaluateExpression(it, evaluationEnvironment)
     } ?: NilValue
 
-    evaluationEnvironment.createVariable(declaration.identifier, variableValue)
+    evaluationEnvironment.createVariable(declaration.identifier.name, variableValue)
+
+    return Nothing
+}
+
+private fun executeFunctionDeclaration(
+    declaration: FunctionDeclaration,
+    evaluationEnvironment: Environment
+): ExecutionResult {
+    val functionValue = LoxFunctionValue(declaration.argNames, declaration.body, evaluationEnvironment)
+
+    evaluationEnvironment.createVariable(declaration.identifier.name, functionValue)
 
     return Nothing
 }
