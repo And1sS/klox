@@ -1,26 +1,27 @@
 package interpreter.astTraversals.runtime
 
-import parser.asString
 import ast.BlockStatement
-import ast.BooleanValue
 import ast.Declaration
 import ast.ExpressionStatement
 import ast.ForStatement
 import ast.FunctionDeclaration
 import ast.IfStatement
-import ast.LoxFunctionValue
-import ast.NilValue
 import ast.PrintStatement
 import ast.ReturnStatement
 import ast.Statement
-import ast.Value
 import ast.VarDeclaration
 import ast.WhileStatement
+import interpreter.BooleanValue
 import interpreter.Environment
+import interpreter.LoxFunctionValue
+import interpreter.NilValue
+import interpreter.Value
+import parser.asString
 import parser.validateRuntimeBoolean
 
 // TODO: think of wrapping inner classes
 // ExecutionResult.Nothing vs just Nothing
+// upd: replace Nothing with Return(NilValue)
 sealed class ExecutionResult
 object Nothing : ExecutionResult()
 data class Return(val value: Value) : ExecutionResult()

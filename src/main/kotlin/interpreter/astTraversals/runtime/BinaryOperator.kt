@@ -1,13 +1,13 @@
 package interpreter.astTraversals.runtime
 
 import ast.BinaryOperatorExpression
-import ast.BooleanValue
-import ast.NumericValue
 import ast.OperatorType
-import ast.StringValue
-import ast.Value
 import exception.EvaluationException
+import interpreter.BooleanValue
 import interpreter.Environment
+import interpreter.NumericValue
+import interpreter.StringValue
+import interpreter.Value
 import parser.validateGrammar
 import parser.validateRuntimeBoolean
 import kotlin.reflect.KClass

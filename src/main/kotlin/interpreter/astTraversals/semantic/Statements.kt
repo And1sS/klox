@@ -6,7 +6,6 @@ import ast.ExpressionStatement
 import ast.ForStatement
 import ast.FunctionDeclaration
 import ast.IfStatement
-import ast.NilValue
 import ast.PrintStatement
 import ast.ReturnStatement
 import ast.Statement
@@ -14,6 +13,7 @@ import ast.VarDeclaration
 import ast.WhileStatement
 import exception.SemanticError
 import interpreter.Environment
+import interpreter.NilValue
 
 fun resolveDeclaration(
     declaration: Declaration,

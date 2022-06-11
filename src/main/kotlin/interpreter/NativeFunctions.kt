@@ -1,8 +1,5 @@
 package interpreter
 
-import ast.NativeFunctionValue
-import ast.NumericValue
-
 fun importNativeFunctions(environment: Environment) {
     for (function in nativeFunctions) {
         environment.createVariable(function.name, function)

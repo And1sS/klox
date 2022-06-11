@@ -1,18 +1,15 @@
 package parser.rules
 
+import ast.BlockStatement
+import ast.Expression
+import ast.FunctionCallExpression
+import ast.FunctionDeclaration
+import ast.UnresolvedIdentifierExpression
 import parser.CompositeToken
 import parser.NodeToken
 import parser.OptionalToken
 import parser.Rule
 import parser.andRule
-import ast.BlockStatement
-import ast.Expression
-import ast.FunctionCallExpression
-import ast.FunctionDeclaration
-import ast.LoxFunctionValue
-import ast.IdentifierExpression
-import ast.UnresolvedIdentifierExpression
-import ast.VarDeclaration
 import parser.component6
 import parser.listRule
 import parser.optionalRule

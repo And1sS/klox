@@ -4,23 +4,16 @@ import ast.AssignmentExpression
 import ast.BinaryOperatorExpression
 import ast.Expression
 import ast.FunctionCallExpression
-import ast.FunctionValue
-import ast.IdentifierExpression
-import ast.LoxFunctionValue
-import ast.NativeFunctionValue
-import ast.NilValue
 import ast.ResolvedIdentifierExpression
 import ast.UnaryOperatorExpression
 import ast.UnresolvedIdentifierExpression
-import ast.Value
+import ast.Literal
 import exception.EvaluationException
 import interpreter.Environment
-import parser.rules.identifierRule
-import parser.validateRuntime
 
 fun resolveExpression(expr: Expression, evaluationEnvironment: Environment): Expression =
     when (expr) {
-        is Value -> expr
+        is Literal -> expr
         // this branch shouldn't have been reached
         is ResolvedIdentifierExpression ->
             throw EvaluationException("Trying to evaluate unresolved variable")

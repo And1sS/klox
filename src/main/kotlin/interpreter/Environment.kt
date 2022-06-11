@@ -1,9 +1,7 @@
 package interpreter
 
-import ast.IdentifierExpression
 import ast.ResolvedIdentifierExpression
 import ast.UnresolvedIdentifierExpression
-import ast.Value
 import exception.EvaluationException
 import exception.SemanticError
 
@@ -23,7 +21,7 @@ class Environment(private val parentEnvironment: Environment?) {
                 ?: throw EvaluationException("Undefined variable: ${identifier.name}")
         }
 
-        if (identifier.name in currentEnvironment.variables)
+        if (identifier.name !in currentEnvironment.variables)
             throw EvaluationException("Undefined variable: ${identifier.name}")
         currentEnvironment.variables[identifier.name] = value
     }

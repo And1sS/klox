@@ -2,23 +2,30 @@ package interpreter.astTraversals.runtime
 
 import ast.AssignmentExpression
 import ast.BinaryOperatorExpression
+import ast.BooleanLiteral
 import ast.Expression
 import ast.FunctionCallExpression
-import ast.FunctionValue
-import ast.IdentifierExpression
-import ast.LoxFunctionValue
-import ast.NativeFunctionValue
-import ast.NilValue
+import ast.Literal
+import ast.NilLiteral
+import ast.NumericLiteral
 import ast.ResolvedIdentifierExpression
+import ast.StringLiteral
 import ast.UnaryOperatorExpression
 import ast.UnresolvedIdentifierExpression
-import ast.Value
 import exception.EvaluationException
+import interpreter.BooleanValue
 import interpreter.Environment
+import interpreter.FunctionValue
+import interpreter.LoxFunctionValue
+import interpreter.NativeFunctionValue
+import interpreter.NilValue
+import interpreter.NumericValue
+import interpreter.StringValue
+import interpreter.Value
 import parser.validateRuntime
 
 fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Value = when (expr) {
-    is Value -> expr
+    is Literal -> evaluateLiteral(expr)
     // this branch shouldn't have been reached
     is UnresolvedIdentifierExpression ->
         throw EvaluationException("Trying to evaluate unresolved variable")
@@ -27,6 +34,13 @@ fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Va
     is BinaryOperatorExpression -> evaluateBinaryOperatorExpression(expr, evaluationEnvironment)
     is AssignmentExpression -> evaluateAssignmentExpression(expr, evaluationEnvironment)
     is FunctionCallExpression -> evaluateFunctionCallExpression(expr, evaluationEnvironment)
+}
+
+private fun evaluateLiteral(expr: Literal): Value = when (expr) {
+    is NilLiteral -> NilValue
+    is BooleanLiteral -> BooleanValue(expr.value)
+    is NumericLiteral -> NumericValue(expr.value)
+    is StringLiteral -> StringValue(expr.value)
 }
 
 private fun evaluateFunctionCallExpression(
@@ -71,7 +85,7 @@ private fun evaluateAssignmentExpression(
     evaluationEnvironment: Environment
 ): Value = evaluateExpression(expr.expr, evaluationEnvironment).also {
     require(expr.identifier is ResolvedIdentifierExpression) {
-        "This branch shouldn't have been reached"
+        "Unresolved identifier encountered in assignment: ${expr.identifier}"
     }
     evaluationEnvironment.assignVariable(expr.identifier, it)
 }
