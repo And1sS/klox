@@ -4,6 +4,7 @@ import ast.BlockStatement
 import ast.Expression
 import ast.FunctionCallExpression
 import ast.FunctionDeclaration
+import ast.IdentifierExpression
 import ast.UnresolvedIdentifierExpression
 import parser.CompositeToken
 import parser.NodeToken
@@ -40,11 +41,12 @@ val functionDeclarationRule: Rule =
         validateGrammar(optionalArgumentsDeclarationToken is OptionalToken)
         validateGrammar(bodyToken is NodeToken && bodyToken.node is BlockStatement)
 
-        FunctionDeclaration(
-            functionNameToken.node.name,
-            optionalArgumentsDeclarationToken.asExpressionList(),
-            bodyToken.node
-        ).let(::NodeToken)
+        val argNames = optionalArgumentsDeclarationToken
+            .asExpressionList<IdentifierExpression>()
+            .map { it.name }
+
+        FunctionDeclaration(functionNameToken.node.name, argNames, bodyToken.node)
+            .let(::NodeToken)
     }
 
 // arguments -> expression ( "," expression )*
