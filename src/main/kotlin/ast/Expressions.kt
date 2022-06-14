@@ -18,36 +18,15 @@ import kotlin.reflect.KClass
 
 sealed class Expression : AbstractSyntaxNode()
 
-sealed class Value : Expression()
+sealed class Literal : Expression()
 
-object NilValue : Value()
+object NilLiteral : Literal()
 
-data class BooleanValue(val value: Boolean) : Value()
+data class BooleanLiteral(val value: Boolean) : Literal()
 
-data class NumericValue(val value: Double) : Value()
+data class NumericLiteral(val value: Double) : Literal()
 
-data class StringValue(val value: String) : Value()
-
-// TODO: implement objects properly
-object ObjectValue : Value()
-
-// TODO: add lambda functions
-sealed class FunctionValue(val argNumber: Int) : Value()
-
-data class LoxFunctionValue(
-    val argNames: List<IdentifierExpression>,
-    val body: BlockStatement
-) : FunctionValue(argNames.size) {
-    override fun toString(): String = "LoxFunctionValue(args = $argNames, body = $body)"
-}
-
-class NativeFunctionValue(
-    val name: String,
-    argNumber: Int,
-    val call: (List<Value>) -> Value
-) : FunctionValue(argNumber) {
-    override fun toString(): String = "NativeFunctionValue(name = $name, argNumber = $argNumber)"
-}
+data class StringLiteral(val value: String) : Literal()
 
 data class FunctionCallExpression(
     val function: Expression,
@@ -70,7 +49,9 @@ data class BinaryOperatorExpression(
     val rhs: Expression
 ) : Expression()
 
-data class IdentifierExpression(val name: String) : Expression()
+sealed class IdentifierExpression(val name: String) : Expression()
+class UnresolvedIdentifierExpression(name: String) : IdentifierExpression(name)
+class ResolvedIdentifierExpression(name: String, val depth: Int) : IdentifierExpression(name)
 
 enum class OperatorType {
     Bang,

@@ -8,6 +8,7 @@ import ast.AssignmentExpression
 import ast.Expression
 import ast.IdentifierExpression
 import ast.UnaryOperatorExpression
+import ast.UnresolvedIdentifierExpression
 import parser.orRule
 import parser.toOperatorTypeAndOperand
 import parser.validateGrammar
@@ -19,7 +20,8 @@ val expressionRule = Rule { ctx ->
 
 // TODO: add parenthesized AST node
 // "(" expression ")"
-private val parenthesizedRule: Rule = andRule(leftParenRule, expressionRule, rightParenRule) { it[1] }
+private val parenthesizedRule: Rule =
+    andRule(leftParenRule, expressionRule, rightParenRule) { it[1] }
 
 // primaryExpression -> NUMBER | STRING | "true" | "false" | "nil" | parenthesizedRule | identifier
 val primaryExpressionRule = orRule(
@@ -58,7 +60,8 @@ private val comparisonRule: Rule = binaryOperatorRule(
 )
 
 // equality -> comparison ( ( "!=" | "==" ) comparison )*
-private val equalityRule: Rule = binaryOperatorRule(comparisonRule, orRule(bangEqualRule, equalEqualRule))
+private val equalityRule: Rule =
+    binaryOperatorRule(comparisonRule, orRule(bangEqualRule, equalEqualRule))
 
 // logicAnd -> equality ( "or" equality )*
 private val logicAndRule: Rule = binaryOperatorRule(equalityRule, andKeywordRule)
@@ -78,7 +81,10 @@ private val assignmentRule: Rule = orRule(
 
 private val assignmentCombiner: Combiner = { tokens ->
     val (identifierToken, _, exprToken) = tokens
-    validateGrammar(identifierToken is NodeToken && identifierToken.node is IdentifierExpression)
+    validateGrammar(
+        identifierToken is NodeToken
+                && identifierToken.node is UnresolvedIdentifierExpression
+    )
     validateGrammar(exprToken is NodeToken && exprToken.node is Expression)
 
     NodeToken(AssignmentExpression(identifierToken.node, exprToken.node))

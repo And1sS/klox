@@ -9,7 +9,7 @@ import ast.BlockStatement
 import ast.Expression
 import ast.ExpressionStatement
 import ast.IfStatement
-import ast.NilValue
+import ast.NilLiteral
 import ast.PrintStatement
 import ast.ReturnStatement
 import ast.Statement
@@ -45,7 +45,7 @@ val returnStatementRule: Rule =
         val returnResult: Expression = optionalExpressionToken.token?.let { expressionToken ->
             validateGrammar(expressionToken is NodeToken && expressionToken.node is Expression)
             expressionToken.node
-        } ?: NilValue
+        } ?: NilLiteral
         NodeToken(ReturnStatement(returnResult))
     }
 

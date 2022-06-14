@@ -3,6 +3,7 @@ package parser.rules
 import parser.Combiner
 import ast.Expression
 import ast.IdentifierExpression
+import ast.UnresolvedIdentifierExpression
 import parser.NodeToken
 import parser.OptionalToken
 import parser.Rule
@@ -23,7 +24,10 @@ val varDeclarationRule: Rule = andRule(
 
 private val varDeclarationCombiner: Combiner = { tokens ->
     val (_, identifierToken, optionalToken, _) = tokens
-    validateGrammar(identifierToken is NodeToken && identifierToken.node is IdentifierExpression)
+    validateGrammar(
+        identifierToken is NodeToken
+                && identifierToken.node is UnresolvedIdentifierExpression
+    )
     validateGrammar(optionalToken is OptionalToken)
 
     val valueExpression: Expression? = optionalToken.token?.let {
@@ -32,7 +36,7 @@ private val varDeclarationCombiner: Combiner = { tokens ->
         optionalToken.token.node
     }
 
-    NodeToken(VarDeclaration(identifierToken.node, valueExpression))
+    NodeToken(VarDeclaration(identifierToken.node.name, valueExpression))
 }
 
 private val assignmentCombiner: Combiner = { tokens ->

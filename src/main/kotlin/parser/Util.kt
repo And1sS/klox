@@ -1,16 +1,16 @@
 package parser
 
-import ast.BooleanValue
 import ast.Expression
-import ast.FunctionValue
-import ast.NilValue
-import ast.NumericValue
-import ast.ObjectValue
 import ast.OperatorType
-import ast.StringValue
-import ast.Value
 import ast.operatorMapping
 import exception.EvaluationException
+import interpreter.BooleanValue
+import interpreter.FunctionValue
+import interpreter.NilValue
+import interpreter.NumericValue
+import interpreter.ObjectValue
+import interpreter.StringValue
+import interpreter.Value
 import kotlin.contracts.contract
 
 fun List<ParserToken>.toOperatorTypeAndOperand(): Pair<OperatorType, Expression> {

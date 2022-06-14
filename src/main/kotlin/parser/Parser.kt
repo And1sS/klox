@@ -1,17 +1,14 @@
 package parser
 
-import lexer.CommaLexerToken
-import lexer.LexerToken
 import ast.AbstractSyntaxNode
 import ast.Declaration
+import lexer.CommaLexerToken
+import lexer.LexerToken
 import parser.rules.binaryOperatorRule
 import parser.rules.commaRule
 
 data class ParsingContext(val tokens: List<LexerToken>, val currentIndex: Int) {
-    fun move(amount: Int): ParsingContext =
-        ParsingContext(tokens, currentIndex + amount)
-
-    fun move(): ParsingContext = move(1)
+    fun move(): ParsingContext = ParsingContext(tokens, currentIndex + 1)
 
     fun currentToken(): LexerToken = tokens[currentIndex]
 }

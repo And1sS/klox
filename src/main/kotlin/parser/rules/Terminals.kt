@@ -1,10 +1,10 @@
 package parser.rules
 
-import ast.BooleanValue
-import ast.IdentifierExpression
-import ast.NilValue
-import ast.NumericValue
-import ast.StringValue
+import ast.BooleanLiteral
+import ast.NilLiteral
+import ast.NumericLiteral
+import ast.StringLiteral
+import ast.UnresolvedIdentifierExpression
 import lexer.AndLexerToken
 import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
@@ -44,9 +44,9 @@ import parser.Rule
 import parser.nodeTokenRule
 import parser.symbolicTokenRule
 
-val identifierRule: Rule = nodeTokenRule<IdentifierLexerToken> { IdentifierExpression(it.name) }
-val stringLiteralRule: Rule = nodeTokenRule<StringLiteralLexerToken> { StringValue(it.value) }
-val numberLiteralRule: Rule = nodeTokenRule<NumberLiteralLexerToken> { NumericValue(it.value) }
+val identifierRule: Rule = nodeTokenRule<IdentifierLexerToken> { UnresolvedIdentifierExpression(it.name) }
+val stringLiteralRule: Rule = nodeTokenRule<StringLiteralLexerToken> { StringLiteral(it.value) }
+val numberLiteralRule: Rule = nodeTokenRule<NumberLiteralLexerToken> { NumericLiteral(it.value) }
 
 val funKeywordRule: Rule = symbolicTokenRule<FunLexerToken>()
 val returnKeywordRule: Rule = symbolicTokenRule<ReturnLexerToken>()
@@ -59,9 +59,9 @@ val forKeywordRule: Rule = symbolicTokenRule<ForLexerToken>()
 val printKeywordRule: Rule = symbolicTokenRule<PrintLexerToken>()
 val varKeywordRule: Rule = symbolicTokenRule<VarLexerToken>()
 
-val trueRule: Rule = nodeTokenRule<TrueLexerToken> { BooleanValue(true) }
-val falseRule: Rule = nodeTokenRule<FalseLexerToken> { BooleanValue(false) }
-val nilRule: Rule = nodeTokenRule<NilLexerToken> { NilValue }
+val trueRule: Rule = nodeTokenRule<TrueLexerToken> { BooleanLiteral(true) }
+val falseRule: Rule = nodeTokenRule<FalseLexerToken> { BooleanLiteral(false) }
+val nilRule: Rule = nodeTokenRule<NilLexerToken> { NilLiteral }
 
 val commaRule: Rule = symbolicTokenRule<CommaLexerToken>()
 val semicolonRule: Rule = symbolicTokenRule<SemicolonLexerToken>()
