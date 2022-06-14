@@ -4,24 +4,24 @@ import ast.AssignmentExpression
 import ast.BinaryOperatorExpression
 import ast.Expression
 import ast.FunctionCallExpression
+import ast.Literal
 import ast.ResolvedIdentifierExpression
 import ast.UnaryOperatorExpression
 import ast.UnresolvedIdentifierExpression
-import ast.Literal
 import exception.EvaluationException
 import interpreter.Environment
 
 fun resolveExpression(expr: Expression, evaluationEnvironment: Environment): Expression =
     when (expr) {
         is Literal -> expr
-        // this branch shouldn't have been reached
-        is ResolvedIdentifierExpression ->
-            throw EvaluationException("Trying to evaluate unresolved variable")
         is UnresolvedIdentifierExpression -> evaluationEnvironment.resolveVariable(expr)
         is UnaryOperatorExpression -> resolveUnaryOperatorExpression(expr, evaluationEnvironment)
         is BinaryOperatorExpression -> resolveBinaryOperatorExpression(expr, evaluationEnvironment)
         is AssignmentExpression -> resolveAssignmentExpression(expr, evaluationEnvironment)
         is FunctionCallExpression -> resolveFunctionCallExpression(expr, evaluationEnvironment)
+        // this branch shouldn't have been reached
+        is ResolvedIdentifierExpression ->
+            throw EvaluationException("Trying to evaluate unresolved variable")
     }
 
 private fun resolveFunctionCallExpression(

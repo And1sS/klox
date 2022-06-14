@@ -112,18 +112,18 @@ private fun resolveForStatement(
     statement: ForStatement,
     evaluationEnvironment: Environment
 ): ForStatement {
+    val condition = statement.condition?.let { resolveExpression(it, evaluationEnvironment) }
+    val increment = statement.increment?.let { resolveExpression(it, evaluationEnvironment) }
+    val body = resolveStatement(statement.body, evaluationEnvironment)
+
     return when (statement.initializer) {
         is VarDeclaration -> ForStatement(
             initializer = resolveVarDeclaration(statement.initializer, evaluationEnvironment),
-            condition = statement.condition?.let { resolveExpression(it, evaluationEnvironment) },
-            increment = statement.increment?.let { resolveExpression(it, evaluationEnvironment) },
-            body = resolveStatement(statement.body, evaluationEnvironment)
+            condition, increment, body
         )
         is ExpressionStatement -> ForStatement(
             initializer = resolveExpressionStatement(statement.initializer, evaluationEnvironment),
-            condition = statement.condition?.let { resolveExpression(it, evaluationEnvironment) },
-            increment = statement.increment?.let { resolveExpression(it, evaluationEnvironment) },
-            body = resolveStatement(statement.body, evaluationEnvironment)
+            condition, increment, body
         )
         // TODO: add unreachable exception
         else -> throw SemanticError("This branch shouldn't have been reached")

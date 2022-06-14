@@ -26,14 +26,14 @@ import parser.validateRuntime
 
 fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Value = when (expr) {
     is Literal -> evaluateLiteral(expr)
-    // this branch shouldn't have been reached
-    is UnresolvedIdentifierExpression ->
-        throw EvaluationException("Trying to evaluate unresolved variable")
     is ResolvedIdentifierExpression -> evaluationEnvironment.getVariableValue(expr)
     is UnaryOperatorExpression -> evaluateUnaryOperatorExpression(expr, evaluationEnvironment)
     is BinaryOperatorExpression -> evaluateBinaryOperatorExpression(expr, evaluationEnvironment)
     is AssignmentExpression -> evaluateAssignmentExpression(expr, evaluationEnvironment)
     is FunctionCallExpression -> evaluateFunctionCallExpression(expr, evaluationEnvironment)
+    // this branch shouldn't have been reached
+    is UnresolvedIdentifierExpression ->
+        throw EvaluationException("Trying to evaluate unresolved variable")
 }
 
 private fun evaluateLiteral(expr: Literal): Value = when (expr) {
@@ -74,10 +74,7 @@ private fun callLoxFunction(
     argumentValues.let(functionValue.argNames::zip)
         .forEach { (argName, argValue) -> functionEnvironment.createVariable(argName, argValue) }
 
-    return when (val result = executeBlockStatement(functionValue.body, functionEnvironment)) {
-        is Nothing -> NilValue
-        is Return -> result.value
-    }
+    return executeBlockStatement(functionValue.body, functionEnvironment).unwrap()
 }
 
 private fun evaluateAssignmentExpression(

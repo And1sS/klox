@@ -2,7 +2,6 @@ import interpreter.interpret
 
 fun main() {
     // TODO: add error synchronization
-    // TODO: think about splitting AST tree and runtime values into 2 different class hierarchies
     val program = """
             fun returnFun() {
                 var a = 1;

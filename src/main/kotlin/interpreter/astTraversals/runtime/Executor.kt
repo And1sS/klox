@@ -19,12 +19,17 @@ import interpreter.Value
 import parser.asString
 import parser.validateRuntimeBoolean
 
-// TODO: think of wrapping inner classes
-// ExecutionResult.Nothing vs just Nothing
-// upd: replace Nothing with Return(NilValue)
-sealed class ExecutionResult
-object Nothing : ExecutionResult()
-data class Return(val value: Value) : ExecutionResult()
+// Needed to distinguish between 'return nil'
+// and not returning anything (for example, from inner block scopes in a function)
+sealed class ExecutionResult {
+    object Nothing : ExecutionResult()
+    data class Return(val value: Value) : ExecutionResult()
+
+    fun unwrap(): Value = when (this) {
+        is Nothing -> NilValue
+        is Return -> value
+    }
+}
 
 fun executeDeclaration(
     declaration: Declaration,
@@ -45,25 +50,23 @@ private fun executeVarDeclaration(
 
     evaluationEnvironment.createVariable(declaration.identifier, variableValue)
 
-    return Nothing
+    return ExecutionResult.Nothing
 }
 
 private fun executeFunctionDeclaration(
     declaration: FunctionDeclaration,
     evaluationEnvironment: Environment
-): ExecutionResult {
-    val functionValue = LoxFunctionValue(declaration.argNames, declaration.body, evaluationEnvironment)
-
-    evaluationEnvironment.createVariable(declaration.identifier, functionValue)
-
-    return Nothing
-}
+): ExecutionResult =
+    LoxFunctionValue(declaration.argNames, declaration.body, evaluationEnvironment)
+        .also { function -> evaluationEnvironment.createVariable(declaration.identifier, function) }
+        .let { ExecutionResult.Nothing }
 
 private fun executeStatement(
     statement: Statement,
     evaluationEnvironment: Environment
 ): ExecutionResult = when (statement) {
-    is ExpressionStatement -> evaluateExpression(statement.expr, evaluationEnvironment).let { Nothing }
+    is ExpressionStatement -> evaluateExpression(statement.expr, evaluationEnvironment)
+        .let { ExecutionResult.Nothing }
     is PrintStatement -> executePrintStatement(statement, evaluationEnvironment)
     is BlockStatement -> executeBlockStatement(statement, evaluationEnvironment)
     is IfStatement -> executeIfStatement(statement, evaluationEnvironment)
@@ -79,7 +82,7 @@ private fun executePrintStatement(
     evaluateExpression(statement.expr, evaluationEnvironment)
         .asString()
         .also(::println)
-        .let { Nothing }
+        .let { ExecutionResult.Nothing }
 
 fun executeBlockStatement(
     statement: BlockStatement,
@@ -88,10 +91,10 @@ fun executeBlockStatement(
     val blockEnvironment = Environment(evaluationEnvironment)
     for (declaration in statement.declarations) {
         val result = executeDeclaration(declaration, blockEnvironment)
-        if (result is Return)
+        if (result is ExecutionResult.Return)
             return result
     }
-    return Nothing
+    return ExecutionResult.Nothing
 }
 
 private fun executeIfStatement(
@@ -102,7 +105,7 @@ private fun executeIfStatement(
     validateRuntimeBoolean(conditionValue)
 
     val body = if (conditionValue.value) statement.body else statement.elseBody
-    return body?.let { executeStatement(it, evaluationEnvironment) } ?: Nothing
+    return body?.let { executeStatement(it, evaluationEnvironment) } ?: ExecutionResult.Nothing
 }
 
 private fun executeWhileStatement(
@@ -115,10 +118,10 @@ private fun executeWhileStatement(
 
         if (!condition.value) break
         val result = executeStatement(statement.body, evaluationEnvironment)
-        if (result is Return)
+        if (result is ExecutionResult.Return)
             return result
     }
-    return Nothing
+    return ExecutionResult.Nothing
 }
 
 private fun executeForStatement(
@@ -137,12 +140,12 @@ private fun executeForStatement(
         if (!condition.value) break
 
         val result = executeStatement(statement.body, forEnvironment)
-        if (result is Return)
+        if (result is ExecutionResult.Return)
             return result
         statement.increment?.let { evaluateExpression(it, forEnvironment) }
     }
 
-    return Nothing
+    return ExecutionResult.Nothing
 }
 
 private fun executeReturnStatement(
@@ -150,4 +153,4 @@ private fun executeReturnStatement(
     evaluationEnvironment: Environment
 ): ExecutionResult =
     evaluateExpression(statement.expr, evaluationEnvironment)
-        .let(::Return)
+        .let(ExecutionResult::Return)
