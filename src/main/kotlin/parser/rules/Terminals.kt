@@ -8,6 +8,7 @@ import ast.UnresolvedIdentifierExpression
 import lexer.AndLexerToken
 import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
+import lexer.ClassLexerToken
 import lexer.CommaLexerToken
 import lexer.EOFLexerToken
 import lexer.ElseLexerToken
@@ -48,8 +49,10 @@ val identifierRule: Rule = nodeTokenRule<IdentifierLexerToken> { UnresolvedIdent
 val stringLiteralRule: Rule = nodeTokenRule<StringLiteralLexerToken> { StringLiteral(it.value) }
 val numberLiteralRule: Rule = nodeTokenRule<NumberLiteralLexerToken> { NumericLiteral(it.value) }
 
+val varKeywordRule: Rule = symbolicTokenRule<VarLexerToken>()
 val funKeywordRule: Rule = symbolicTokenRule<FunLexerToken>()
 val returnKeywordRule: Rule = symbolicTokenRule<ReturnLexerToken>()
+val classKeywordRule: Rule = symbolicTokenRule<ClassLexerToken>()
 val ifKeywordRule: Rule = symbolicTokenRule<IfLexerToken>()
 val elseKeywordRule: Rule = symbolicTokenRule<ElseLexerToken>()
 val orKeywordRule: Rule = symbolicTokenRule<OrLexerToken>()
@@ -57,7 +60,6 @@ val andKeywordRule: Rule = symbolicTokenRule<AndLexerToken>()
 val whileKeywordRule: Rule = symbolicTokenRule<WhileLexerToken>()
 val forKeywordRule: Rule = symbolicTokenRule<ForLexerToken>()
 val printKeywordRule: Rule = symbolicTokenRule<PrintLexerToken>()
-val varKeywordRule: Rule = symbolicTokenRule<VarLexerToken>()
 
 val trueRule: Rule = nodeTokenRule<TrueLexerToken> { BooleanLiteral(true) }
 val falseRule: Rule = nodeTokenRule<FalseLexerToken> { BooleanLiteral(false) }

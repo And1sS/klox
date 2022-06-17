@@ -3,14 +3,19 @@ package ast
 sealed class Declaration : AbstractSyntaxNode()
 
 data class VarDeclaration(
-    val identifier: String,
+    val name: String,
     val initializationExpression: Expression?
 ) : Declaration()
 
 data class FunctionDeclaration(
-    val identifier: String,
+    val name: String,
     val argNames: List<String>,
     val body: BlockStatement
+) : Declaration()
+
+data class ClassDeclaration(
+    val name: String,
+    val members: List<Declaration>
 ) : Declaration()
 
 sealed class Statement : Declaration()

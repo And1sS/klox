@@ -20,6 +20,7 @@ import interpreter.LoxFunctionValue
 import interpreter.NativeFunctionValue
 import interpreter.NilValue
 import interpreter.NumericValue
+import interpreter.ObjectValue
 import interpreter.StringValue
 import interpreter.Value
 import parser.validateRuntime
@@ -43,14 +44,20 @@ private fun evaluateLiteral(expr: Literal): Value = when (expr) {
     is StringLiteral -> StringValue(expr.value)
 }
 
+// TODO: Refactor
 private fun evaluateFunctionCallExpression(
     expr: FunctionCallExpression,
     evaluationEnvironment: Environment
 ): Value {
-    val functionValue = evaluateExpression(expr.function, evaluationEnvironment)
-    validateRuntime(functionValue is FunctionValue) {
-        "Cannot call expression of type ${functionValue::class}"
+    val callableValue = evaluateExpression(expr.function, evaluationEnvironment)
+    validateRuntime(callableValue is FunctionValue || callableValue is interpreter.ClassValue) {
+        "Cannot call expression of type ${callableValue::class}"
     }
+
+    val functionValue: FunctionValue =
+        if (callableValue is interpreter.ClassValue)
+            callableValue.constructor
+        else callableValue as FunctionValue
 
     validateRuntime(functionValue.argNumber == expr.arguments.size) {
         "Expected ${functionValue.argNumber} arguments, but got ${expr.arguments.size}"
@@ -63,6 +70,25 @@ private fun evaluateFunctionCallExpression(
         is LoxFunctionValue -> callLoxFunction(functionValue, argumentValues)
         is NativeFunctionValue -> functionValue.call(argumentValues)
     }
+}
+
+private fun createNewObject(
+    klass: interpreter.ClassValue,
+    evaluationEnvironment: Environment
+): ObjectValue {
+    val objectEnvironment = Environment()
+    for ((name, initializer) in klass.fields) {
+        objectEnvironment.createVariable(
+            name,
+            evaluateExpression(initializer, klass.capturingEnvironment)
+        )
+    }
+
+    klass.methods.forEach { (name, method) -> objectEnvironment.createVariable(name, method) }
+
+    val objectValue = ObjectValue(klass, objectEnvironment)
+
+    return objectValue.also { klass. }
 }
 
 private fun callLoxFunction(

@@ -1,14 +1,13 @@
 package parser.rules
 
+import ast.AssignmentExpression
+import ast.Expression
+import ast.UnaryOperatorExpression
+import ast.UnresolvedIdentifierExpression
 import parser.Combiner
 import parser.NodeToken
 import parser.Rule
 import parser.andRule
-import ast.AssignmentExpression
-import ast.Expression
-import ast.IdentifierExpression
-import ast.UnaryOperatorExpression
-import ast.UnresolvedIdentifierExpression
 import parser.orRule
 import parser.toOperatorTypeAndOperand
 import parser.validateGrammar
@@ -63,7 +62,7 @@ private val comparisonRule: Rule = binaryOperatorRule(
 private val equalityRule: Rule =
     binaryOperatorRule(comparisonRule, orRule(bangEqualRule, equalEqualRule))
 
-// logicAnd -> equality ( "or" equality )*
+// logicAnd -> equality ( "and" equality )*
 private val logicAndRule: Rule = binaryOperatorRule(equalityRule, andKeywordRule)
 
 // logicOr -> logicAnd ( "or" logicAnd )*

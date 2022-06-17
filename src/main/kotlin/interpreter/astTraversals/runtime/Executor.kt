@@ -48,7 +48,7 @@ private fun executeVarDeclaration(
         evaluateExpression(it, evaluationEnvironment)
     } ?: NilValue
 
-    evaluationEnvironment.createVariable(declaration.identifier, variableValue)
+    evaluationEnvironment.createVariable(declaration.name, variableValue)
 
     return ExecutionResult.Nothing
 }
@@ -58,7 +58,7 @@ private fun executeFunctionDeclaration(
     evaluationEnvironment: Environment
 ): ExecutionResult =
     LoxFunctionValue(declaration.argNames, declaration.body, evaluationEnvironment)
-        .also { function -> evaluationEnvironment.createVariable(declaration.identifier, function) }
+        .also { function -> evaluationEnvironment.createVariable(declaration.name, function) }
         .let { ExecutionResult.Nothing }
 
 private fun executeStatement(

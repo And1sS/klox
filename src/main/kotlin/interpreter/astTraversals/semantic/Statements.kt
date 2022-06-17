@@ -32,9 +32,9 @@ private fun resolveVarDeclaration(
         resolveExpression(it, evaluationEnvironment)
     }
 
-    evaluationEnvironment.createVariable(declaration.identifier, NilValue)
+    evaluationEnvironment.createVariable(declaration.name, NilValue)
 
-    return VarDeclaration(declaration.identifier, initializationExpression)
+    return VarDeclaration(declaration.name, initializationExpression)
 }
 
 private fun resolveFunctionDeclaration(
@@ -48,9 +48,9 @@ private fun resolveFunctionDeclaration(
     }
 
     val body = resolveBlockStatement(declaration.body, functionEnvironment)
-    evaluationEnvironment.createVariable(declaration.identifier, NilValue)
+    evaluationEnvironment.createVariable(declaration.name, NilValue)
 
-    return FunctionDeclaration(declaration.identifier, declaration.argNames, body)
+    return FunctionDeclaration(declaration.name, declaration.argNames, body)
 }
 
 private fun resolveStatement(
