@@ -3,8 +3,8 @@ package interpreter.astTraversals.runtime
 import ast.AssignmentExpression
 import ast.BinaryOperatorExpression
 import ast.BooleanLiteral
+import ast.CallExpression
 import ast.Expression
-import ast.FunctionCallExpression
 import ast.Literal
 import ast.NilLiteral
 import ast.NumericLiteral
@@ -31,7 +31,7 @@ fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Va
     is UnaryOperatorExpression -> evaluateUnaryOperatorExpression(expr, evaluationEnvironment)
     is BinaryOperatorExpression -> evaluateBinaryOperatorExpression(expr, evaluationEnvironment)
     is AssignmentExpression -> evaluateAssignmentExpression(expr, evaluationEnvironment)
-    is FunctionCallExpression -> evaluateFunctionCallExpression(expr, evaluationEnvironment)
+    is CallExpression -> evaluateCallExpression(expr, evaluationEnvironment)
     // this branch shouldn't have been reached
     is UnresolvedIdentifierExpression ->
         throw EvaluationException("Trying to evaluate unresolved variable")
@@ -44,58 +44,62 @@ private fun evaluateLiteral(expr: Literal): Value = when (expr) {
     is StringLiteral -> StringValue(expr.value)
 }
 
-// TODO: Refactor
-private fun evaluateFunctionCallExpression(
-    expr: FunctionCallExpression,
+private fun evaluateCallExpression(
+    expr: CallExpression,
     evaluationEnvironment: Environment
 ): Value {
-    val callableValue = evaluateExpression(expr.function, evaluationEnvironment)
-    validateRuntime(callableValue is FunctionValue || callableValue is interpreter.ClassValue) {
-        "Cannot call expression of type ${callableValue::class}"
-    }
-
-    val functionValue: FunctionValue =
-        if (callableValue is interpreter.ClassValue)
-            callableValue.constructor
-        else callableValue as FunctionValue
-
-    validateRuntime(functionValue.argNumber == expr.arguments.size) {
-        "Expected ${functionValue.argNumber} arguments, but got ${expr.arguments.size}"
-    }
-
     val argumentValues: List<Value> = expr.arguments
         .map { arg -> evaluateExpression(arg, evaluationEnvironment) }
 
-    return when (functionValue) {
-        is LoxFunctionValue -> callLoxFunction(functionValue, argumentValues)
-        is NativeFunctionValue -> functionValue.call(argumentValues)
-    }
-}
-
-private fun createNewObject(
-    klass: interpreter.ClassValue,
-    evaluationEnvironment: Environment
-): ObjectValue {
-    val objectEnvironment = Environment()
-    for ((name, initializer) in klass.fields) {
-        objectEnvironment.createVariable(
-            name,
-            evaluateExpression(initializer, klass.capturingEnvironment)
+    return when (val callableValue = evaluateExpression(expr.function, evaluationEnvironment)) {
+        is FunctionValue -> evaluateFunctionCall(callableValue, argumentValues)
+        is interpreter.ClassValue -> evaluateConstructorCall(
+            callableValue,
+            argumentValues
+        )
+        else -> throw EvaluationException(
+            "Cannot call expression of type ${callableValue::class}"
         )
     }
-
-    klass.methods.forEach { (name, method) -> objectEnvironment.createVariable(name, method) }
-
-    val objectValue = ObjectValue(klass, objectEnvironment)
-
-    return objectValue.also { klass. }
 }
 
-private fun callLoxFunction(
+private fun evaluateFunctionCall(
+    function: FunctionValue,
+    arguments: List<Value>
+): Value {
+    validateRuntime(function.argNumber == arguments.size) {
+        "Expected ${function.argNumber} arguments, but got ${arguments.size}"
+    }
+    return when (function) {
+        is LoxFunctionValue -> evaluateLoxFunctionCall(function, arguments)
+        is NativeFunctionValue -> function.call(arguments)
+    }
+}
+
+private fun evaluateConstructorCall(
+    klass: interpreter.ClassValue,
+    arguments: List<Value>
+): Value {
+    val objectEnvironment = Environment(klass.capturedEnvironment)
+    for (memberDeclaration in klass.members) {
+        executeDeclaration(memberDeclaration, objectEnvironment)
+    }
+
+    val boundConstructor = LoxFunctionValue(
+        klass.constructor.argNames,
+        klass.constructor.body,
+        objectEnvironment
+    )
+    evaluateFunctionCall(boundConstructor, arguments)
+
+    return ObjectValue(klass, objectEnvironment)
+}
+
+private fun evaluateLoxFunctionCall(
     functionValue: LoxFunctionValue,
     argumentValues: List<Value>
 ): Value {
-    val functionEnvironment = Environment(functionValue.capturingEnvironment)
+    val functionEnvironment = Environment(functionValue.capturedEnvironment)
 
     argumentValues.let(functionValue.argNames::zip)
         .forEach { (argName, argValue) -> functionEnvironment.createVariable(argName, argValue) }

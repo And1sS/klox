@@ -2,7 +2,7 @@ package parser.rules
 
 import ast.BlockStatement
 import ast.Expression
-import ast.FunctionCallExpression
+import ast.CallExpression
 import ast.FunctionDeclaration
 import ast.IdentifierExpression
 import ast.UnresolvedIdentifierExpression
@@ -69,7 +69,7 @@ val callRule: Rule =
             .forEach { call ->
                 val (_, optionalArgumentsToken, _) = call
                 validateGrammar(optionalArgumentsToken is OptionalToken)
-                processed = FunctionCallExpression(processed, optionalArgumentsToken.asExpressionList())
+                processed = CallExpression(processed, optionalArgumentsToken.asExpressionList())
             }
 
         NodeToken(processed)

@@ -28,8 +28,9 @@ fun Value.asString(): String = when (this) {
     is BooleanValue -> value.toString()
     is NumericValue -> value.toString()
     is StringValue -> value
-    is ObjectValue -> toString()
     is FunctionValue -> toString()
+    is ObjectValue -> toString()
+    is interpreter.ClassValue -> toString()
 }
 
 // To enhance list destructuring capabilities
@@ -51,7 +52,7 @@ fun validateRuntime(value: Boolean, errorMessage: () -> String = { "Runtime exce
         returns() implies (value)
     }
     if (!value) {
-        throw EvaluationException(errorMessage.let { it() })
+        throw EvaluationException(errorMessage())
     }
 }
 

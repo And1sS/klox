@@ -28,7 +28,7 @@ data class NumericLiteral(val value: Double) : Literal()
 
 data class StringLiteral(val value: String) : Literal()
 
-data class FunctionCallExpression(
+data class CallExpression(
     val function: Expression,
     val arguments: List<Expression>
 ) : Expression()

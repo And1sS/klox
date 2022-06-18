@@ -3,7 +3,7 @@ package interpreter.astTraversals.semantic
 import ast.AssignmentExpression
 import ast.BinaryOperatorExpression
 import ast.Expression
-import ast.FunctionCallExpression
+import ast.CallExpression
 import ast.Literal
 import ast.ResolvedIdentifierExpression
 import ast.UnaryOperatorExpression
@@ -18,21 +18,21 @@ fun resolveExpression(expr: Expression, evaluationEnvironment: Environment): Exp
         is UnaryOperatorExpression -> resolveUnaryOperatorExpression(expr, evaluationEnvironment)
         is BinaryOperatorExpression -> resolveBinaryOperatorExpression(expr, evaluationEnvironment)
         is AssignmentExpression -> resolveAssignmentExpression(expr, evaluationEnvironment)
-        is FunctionCallExpression -> resolveFunctionCallExpression(expr, evaluationEnvironment)
+        is CallExpression -> resolveFunctionCallExpression(expr, evaluationEnvironment)
         // this branch shouldn't have been reached
         is ResolvedIdentifierExpression ->
             throw EvaluationException("Trying to evaluate unresolved variable")
     }
 
 private fun resolveFunctionCallExpression(
-    expr: FunctionCallExpression,
+    expr: CallExpression,
     evaluationEnvironment: Environment
-): FunctionCallExpression {
+): CallExpression {
     val functionExpression = resolveExpression(expr.function, evaluationEnvironment)
     val arguments: List<Expression> = expr.arguments
         .map { arg -> resolveExpression(arg, evaluationEnvironment) }
 
-    return FunctionCallExpression(functionExpression, arguments)
+    return CallExpression(functionExpression, arguments)
 }
 
 private fun resolveAssignmentExpression(
