@@ -1,7 +1,6 @@
 package parser.rules
 
 import ast.ClassDeclaration
-import ast.Declaration
 import ast.FunctionDeclaration
 import ast.IdentifierExpression
 import ast.VarDeclaration
@@ -15,7 +14,7 @@ import parser.zeroOrMoreRule
 
 // classContents -> (varDeclaration | functionDeclaration)*
 val classContentsRule: Rule = zeroOrMoreRule(
-    orRule(varKeywordRule, functionDeclarationRule)
+    orRule(varDeclarationRule, functionDeclarationRule)
 )
 
 // classDeclaration -> "class" identifier "{" classContents "}"
@@ -30,11 +29,29 @@ val classDeclarationRule: Rule = andRule(
     validateGrammar(nameToken is NodeToken && nameToken.node is IdentifierExpression)
     validateGrammar(membersToken is CompositeToken)
 
-    val members = membersToken.tokens.map { token ->
+    val className = nameToken.node.name
+    val fields = mutableListOf<VarDeclaration>()
+    val methods = mutableListOf<FunctionDeclaration>()
+    val constructors = mutableListOf<FunctionDeclaration>()
+
+    for (token in membersToken.tokens) {
         validateGrammar(token is NodeToken)
-        validateGrammar(token.node is VarDeclaration || token.node is FunctionDeclaration)
-        token.node as Declaration
+        val member = token.node
+        when {
+            member is VarDeclaration && member.name == className ->
+                throw IllegalArgumentException(
+                    "Can't declare field ${member.name} for class $className"
+                )
+            member is VarDeclaration -> fields.add(member)
+
+            member is FunctionDeclaration && member.name == className -> constructors.add(member)
+            member is FunctionDeclaration -> methods.add(member)
+
+            else -> throw IllegalArgumentException("Illegal grammar")
+            // TODO: throw meaningful exception,
+            //  consider refactoring require() usages because they throw IllegalArgumentException
+        }
     }
 
-    NodeToken(ClassDeclaration(nameToken.node.name, members))
+    NodeToken(ClassDeclaration(className, fields, methods, constructors))
 }

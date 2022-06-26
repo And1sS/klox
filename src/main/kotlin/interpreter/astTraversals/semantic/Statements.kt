@@ -1,6 +1,7 @@
 package interpreter.astTraversals.semantic
 
 import ast.BlockStatement
+import ast.ClassDeclaration
 import ast.Declaration
 import ast.ExpressionStatement
 import ast.ForStatement
@@ -21,6 +22,7 @@ fun resolveDeclaration(
 ): Declaration = when (declaration) {
     is VarDeclaration -> resolveVarDeclaration(declaration, evaluationEnvironment)
     is FunctionDeclaration -> resolveFunctionDeclaration(declaration, evaluationEnvironment)
+    is ClassDeclaration -> resolveClassDeclaration(declaration, evaluationEnvironment)
     is Statement -> resolveStatement(declaration, evaluationEnvironment)
 }
 
@@ -38,19 +40,19 @@ private fun resolveVarDeclaration(
 }
 
 private fun resolveFunctionDeclaration(
-    declaration: FunctionDeclaration,
+    function: FunctionDeclaration,
     evaluationEnvironment: Environment
 ): FunctionDeclaration {
     val functionEnvironment = Environment(evaluationEnvironment)
 
-    for (arg in declaration.argNames) {
+    for (arg in function.argNames) {
         functionEnvironment.createVariable(arg, NilValue)
     }
 
-    val body = resolveBlockStatement(declaration.body, functionEnvironment)
-    evaluationEnvironment.createVariable(declaration.name, NilValue)
+    evaluationEnvironment.createVariable(function.name, NilValue)
+    val body = resolveBlockStatement(function.body, functionEnvironment)
 
-    return FunctionDeclaration(declaration.name, declaration.argNames, body)
+    return FunctionDeclaration(function.name, function.argNames, body)
 }
 
 private fun resolveStatement(

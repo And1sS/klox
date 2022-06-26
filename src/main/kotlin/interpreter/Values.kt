@@ -1,8 +1,8 @@
 package interpreter
 
 import ast.BlockStatement
-import ast.Declaration
 import ast.FunctionDeclaration
+import ast.VarDeclaration
 
 sealed class Value
 
@@ -23,7 +23,8 @@ data class ObjectValue(
 data class ClassValue(
     val name: String,
     val constructor: FunctionDeclaration,
-    val members: List<Declaration>,
+    val fields: List<VarDeclaration>,
+    val methods: List<FunctionDeclaration>,
     val capturedEnvironment: Environment
 ) : Value()
 

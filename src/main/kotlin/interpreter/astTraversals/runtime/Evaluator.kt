@@ -81,8 +81,24 @@ private fun evaluateConstructorCall(
     arguments: List<Value>
 ): Value {
     val objectEnvironment = Environment(klass.capturedEnvironment)
-    for (memberDeclaration in klass.members) {
-        executeDeclaration(memberDeclaration, objectEnvironment)
+
+    for (field in klass.fields) {
+        // declare all fields with NilValue
+        // in case any field is referenced before initialization
+        objectEnvironment.createVariable(field.name, NilValue)
+    }
+
+    for (method in klass.methods) {
+        executeDeclaration(method, objectEnvironment)
+    }
+
+    for (field in klass.fields) {
+        objectEnvironment.assignVariable(
+            ResolvedIdentifierExpression(field.name, 0),
+            field.initializationExpression?.let {
+                evaluateExpression(it, objectEnvironment)
+            } ?: NilValue
+        )
     }
 
     val boundConstructor = LoxFunctionValue(

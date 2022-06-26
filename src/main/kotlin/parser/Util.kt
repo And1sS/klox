@@ -30,7 +30,7 @@ fun Value.asString(): String = when (this) {
     is StringValue -> value
     is FunctionValue -> toString()
     is ObjectValue -> toString()
-    is interpreter.ClassValue -> toString()
+    is interpreter.ClassValue -> toString() // TODO: fix
 }
 
 // To enhance list destructuring capabilities

@@ -68,7 +68,7 @@ private fun nextToken(lexingContext: LexingContext): Pair<LexerToken, LexingCont
     return Pair(token, withoutWhitespacesAndComments.skipChars(token.length))
 }
 
-private val whitespacesCommentsRegex = Regex("([\\s\\t]+(//.*)?)")
+private val whitespacesCommentsRegex = Regex("([\\s\\t]*(//.*)?)")
 private fun skipWhitespacesAndComments(lexingContext: LexingContext): LexingContext {
     val matchEndIndex = firstMatch(lexingContext.remainingString, whitespacesCommentsRegex)?.length
         ?: return lexingContext
@@ -132,6 +132,5 @@ private fun tryParseIdentifier(lexingContext: LexingContext): LexerToken {
     return IdentifierLexerToken(identifier, lexingContext.position)
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 private fun firstMatch(value: String, regex: Regex): String? =
     regex.matchAt(value, 0)?.groups?.get(1)?.value

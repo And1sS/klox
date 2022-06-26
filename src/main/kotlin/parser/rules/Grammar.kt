@@ -1,10 +1,10 @@
 package parser.rules
 
+import ast.Declaration
 import parser.NodeToken
 import parser.ParserToken
 import parser.ProgramToken
 import parser.Rule
-import ast.Declaration
 import parser.orRule
 import parser.validateGrammar
 import parser.zeroOrMoreRule
@@ -15,7 +15,12 @@ val intermediateDeclarationRule: Rule = Rule { ctx -> declarationRule.match(ctx)
 // varDeclaration is separated from statement to prohibit
 // this case: if (monday) var beverage = "espresso";
 // declaration ->  statement | varDeclaration | functionDeclaration
-val declarationRule: Rule = orRule(statementRule, varDeclarationRule, functionDeclarationRule)
+val declarationRule: Rule = orRule(
+    statementRule,
+    varDeclarationRule,
+    functionDeclarationRule,
+    classDeclarationRule
+)
 
 // program -> declaration*
 val programRule: Rule = zeroOrMoreRule(declarationRule) { tokens ->

@@ -2,21 +2,25 @@ package ast
 
 sealed class Declaration : AbstractSyntaxNode()
 
-data class VarDeclaration(
-    val name: String,
-    val initializationExpression: Expression?
-) : Declaration()
+sealed class EntityDeclaration(val name: String) : Declaration()
 
-data class FunctionDeclaration(
-    val name: String,
+class VarDeclaration(
+    name: String,
+    val initializationExpression: Expression?
+) : EntityDeclaration(name)
+
+class FunctionDeclaration(
+    name: String,
     val argNames: List<String>,
     val body: BlockStatement
-) : Declaration()
+) : EntityDeclaration(name)
 
-data class ClassDeclaration(
-    val name: String,
-    val members: List<Declaration>
-) : Declaration()
+class ClassDeclaration(
+    name: String,
+    val fields: List<VarDeclaration>,
+    val methods: List<FunctionDeclaration>,
+    val constructors: List<FunctionDeclaration>
+) : EntityDeclaration(name)
 
 sealed class Statement : Declaration()
 
