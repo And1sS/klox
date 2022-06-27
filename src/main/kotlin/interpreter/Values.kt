@@ -17,7 +17,7 @@ data class StringValue(val value: String) : Value()
 // TODO: add default constructor if no constructor is present
 data class ObjectValue(
     val loxClass: ClassValue,
-    val enclosedEnvironment: Environment
+    val objectEnvironment: Environment
 ) : Value()
 
 data class ClassValue(

@@ -2,8 +2,10 @@ package interpreter.astTraversals.semantic
 
 import ast.AssignmentExpression
 import ast.BinaryOperatorExpression
-import ast.Expression
 import ast.CallExpression
+import ast.Expression
+import ast.FieldAccessExpression
+import ast.LabelExpression
 import ast.Literal
 import ast.ResolvedIdentifierExpression
 import ast.UnaryOperatorExpression
@@ -14,14 +16,11 @@ import interpreter.Environment
 fun resolveExpression(expr: Expression, evaluationEnvironment: Environment): Expression =
     when (expr) {
         is Literal -> expr
-        is UnresolvedIdentifierExpression -> evaluationEnvironment.resolveVariable(expr)
+        is LabelExpression -> resolveLabelExpression(expr, evaluationEnvironment)
         is UnaryOperatorExpression -> resolveUnaryOperatorExpression(expr, evaluationEnvironment)
         is BinaryOperatorExpression -> resolveBinaryOperatorExpression(expr, evaluationEnvironment)
         is AssignmentExpression -> resolveAssignmentExpression(expr, evaluationEnvironment)
         is CallExpression -> resolveFunctionCallExpression(expr, evaluationEnvironment)
-        // this branch shouldn't have been reached
-        is ResolvedIdentifierExpression ->
-            throw EvaluationException("Trying to evaluate unresolved variable")
     }
 
 private fun resolveFunctionCallExpression(
@@ -38,32 +37,39 @@ private fun resolveFunctionCallExpression(
 private fun resolveAssignmentExpression(
     expr: AssignmentExpression,
     evaluationEnvironment: Environment
-): AssignmentExpression {
-    require(expr.identifier is UnresolvedIdentifierExpression) {
-        "This branch shouldn't have been reached"
-    }
-    return AssignmentExpression(
-        identifier = evaluationEnvironment.resolveVariable(expr.identifier),
-        expr = resolveExpression(expr.expr, evaluationEnvironment)
+): AssignmentExpression = AssignmentExpression(
+    label = resolveLabelExpression(expr.label, evaluationEnvironment),
+    expr = resolveExpression(expr.expr, evaluationEnvironment)
+)
+
+private fun resolveLabelExpression(
+    expr: LabelExpression,
+    evaluationEnvironment: Environment
+): LabelExpression = when (expr) {
+    is FieldAccessExpression -> FieldAccessExpression(
+        lhs = resolveExpression(expr.lhs, evaluationEnvironment),
+        memberName = expr.memberName
     )
+    is UnresolvedIdentifierExpression -> evaluationEnvironment.resolveVariable(expr)
+    // this branch shouldn't be reached
+    is ResolvedIdentifierExpression ->
+        throw EvaluationException("Trying to re-resolve variable")
 }
 
-fun resolveBinaryOperatorExpression(
+private fun resolveBinaryOperatorExpression(
     expression: BinaryOperatorExpression,
     evaluationEnvironment: Environment
-): BinaryOperatorExpression =
-    BinaryOperatorExpression(
-        operatorType = expression.operatorType,
-        lhs = resolveExpression(expression.lhs, evaluationEnvironment),
-        rhs = resolveExpression(expression.rhs, evaluationEnvironment)
-    )
+): BinaryOperatorExpression = BinaryOperatorExpression(
+    operatorType = expression.operatorType,
+    lhs = resolveExpression(expression.lhs, evaluationEnvironment),
+    rhs = resolveExpression(expression.rhs, evaluationEnvironment)
+)
 
-fun resolveUnaryOperatorExpression(
+private fun resolveUnaryOperatorExpression(
     expression: UnaryOperatorExpression,
     evaluationEnvironment: Environment
-): UnaryOperatorExpression =
-    UnaryOperatorExpression(
-        expression.operatorType,
-        resolveExpression(expression.expr, evaluationEnvironment)
-    )
+): UnaryOperatorExpression = UnaryOperatorExpression(
+    expression.operatorType,
+    resolveExpression(expression.expr, evaluationEnvironment)
+)
 

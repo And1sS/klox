@@ -5,6 +5,8 @@ import ast.BinaryOperatorExpression
 import ast.BooleanLiteral
 import ast.CallExpression
 import ast.Expression
+import ast.FieldAccessExpression
+import ast.LabelExpression
 import ast.Literal
 import ast.NilLiteral
 import ast.NumericLiteral
@@ -27,14 +29,11 @@ import parser.validateRuntime
 
 fun evaluateExpression(expr: Expression, evaluationEnvironment: Environment): Value = when (expr) {
     is Literal -> evaluateLiteral(expr)
-    is ResolvedIdentifierExpression -> evaluationEnvironment.getVariableValue(expr)
+    is LabelExpression -> evaluateLabelExpression(expr, evaluationEnvironment)
     is UnaryOperatorExpression -> evaluateUnaryOperatorExpression(expr, evaluationEnvironment)
     is BinaryOperatorExpression -> evaluateBinaryOperatorExpression(expr, evaluationEnvironment)
     is AssignmentExpression -> evaluateAssignmentExpression(expr, evaluationEnvironment)
     is CallExpression -> evaluateCallExpression(expr, evaluationEnvironment)
-    // this branch shouldn't have been reached
-    is UnresolvedIdentifierExpression ->
-        throw EvaluationException("Trying to evaluate unresolved variable")
 }
 
 private fun evaluateLiteral(expr: Literal): Value = when (expr) {
@@ -123,12 +122,62 @@ private fun evaluateLoxFunctionCall(
     return executeBlockStatement(functionValue.body, functionEnvironment).unwrap()
 }
 
+private fun evaluateLabelExpression(
+    expr: LabelExpression,
+    evaluationEnvironment: Environment
+): Value = when (expr) {
+    is ResolvedIdentifierExpression -> evaluationEnvironment.getVariableValue(expr)
+    is FieldAccessExpression -> evaluateFieldAccessExpression(expr, evaluationEnvironment)
+    // this branch shouldn't be reached
+    is UnresolvedIdentifierExpression -> throw EvaluationException(
+        "Unresolved identifier encountered in assignment: ${expr.name}"
+    )
+}
+
 private fun evaluateAssignmentExpression(
     expr: AssignmentExpression,
     evaluationEnvironment: Environment
-): Value = evaluateExpression(expr.expr, evaluationEnvironment).also {
-    require(expr.identifier is ResolvedIdentifierExpression) {
-        "Unresolved identifier encountered in assignment: ${expr.identifier}"
+): Value {
+    val result = evaluateExpression(expr.expr, evaluationEnvironment)
+    when (expr.label) {
+        is ResolvedIdentifierExpression -> evaluationEnvironment.assignVariable(expr.label, result)
+        is FieldAccessExpression -> assignField(expr.label, result, evaluationEnvironment)
+        // this branch shouldn't be reached
+        is UnresolvedIdentifierExpression -> throw EvaluationException(
+            "Unresolved identifier encountered in assignment: ${expr.label.name}"
+        )
     }
-    evaluationEnvironment.assignVariable(expr.identifier, it)
+    return result
+}
+
+private fun assignField(
+    expr: FieldAccessExpression,
+    value: Value,
+    evaluationEnvironment: Environment
+): Unit = accessField(expr, evaluationEnvironment) {
+    it.objectEnvironment.assignVariable(ResolvedIdentifierExpression(expr.memberName, 0), value)
+}
+
+private fun evaluateFieldAccessExpression(
+    expr: FieldAccessExpression,
+    evaluationEnvironment: Environment
+): Value = accessField(expr, evaluationEnvironment) {
+    it.objectEnvironment.getVariableValue(ResolvedIdentifierExpression(expr.memberName, 0))
+}
+
+private inline fun <reified T> accessField(
+    expr: FieldAccessExpression,
+    evaluationEnvironment: Environment,
+    block: (objectValue: ObjectValue) -> T
+): T {
+    val objectValue = evaluateExpression(expr.lhs, evaluationEnvironment)
+    val errorMessage = "Can't access field ${expr.memberName} of $objectValue"
+
+    validateRuntime(objectValue is ObjectValue) { errorMessage }
+
+    try {
+        return block(objectValue)
+    } catch (_: EvaluationException) {
+        throw EvaluationException(errorMessage)
+    }
 }

@@ -10,6 +10,7 @@ import lexer.BangEqualLexerToken
 import lexer.BangLexerToken
 import lexer.ClassLexerToken
 import lexer.CommaLexerToken
+import lexer.DotLexerToken
 import lexer.EOFLexerToken
 import lexer.ElseLexerToken
 import lexer.EqualEqualLexerToken
@@ -45,7 +46,8 @@ import parser.Rule
 import parser.nodeTokenRule
 import parser.symbolicTokenRule
 
-val identifierRule: Rule = nodeTokenRule<IdentifierLexerToken> { UnresolvedIdentifierExpression(it.name) }
+val identifierRule: Rule =
+    nodeTokenRule<IdentifierLexerToken> { UnresolvedIdentifierExpression(it.name) }
 val stringLiteralRule: Rule = nodeTokenRule<StringLiteralLexerToken> { StringLiteral(it.value) }
 val numberLiteralRule: Rule = nodeTokenRule<NumberLiteralLexerToken> { NumericLiteral(it.value) }
 
@@ -73,6 +75,7 @@ val rightBraceRule: Rule = symbolicTokenRule<RightBraceLexerToken>()
 val leftParenRule: Rule = symbolicTokenRule<LeftParenLexerToken>()
 val rightParenRule: Rule = symbolicTokenRule<RightParenLexerToken>()
 
+val dotRule: Rule = symbolicTokenRule<DotLexerToken>()
 val bangRule: Rule = symbolicTokenRule<BangLexerToken>()
 val plusRule: Rule = symbolicTokenRule<PlusLexerToken>()
 val minusRule: Rule = symbolicTokenRule<MinusLexerToken>()

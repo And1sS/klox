@@ -14,7 +14,7 @@ val intermediateDeclarationRule: Rule = Rule { ctx -> declarationRule.match(ctx)
 
 // varDeclaration is separated from statement to prohibit
 // this case: if (monday) var beverage = "espresso";
-// declaration ->  statement | varDeclaration | functionDeclaration
+// declaration ->  statement | varDeclaration | functionDeclaration | classDeclaration
 val declarationRule: Rule = orRule(
     statementRule,
     varDeclarationRule,

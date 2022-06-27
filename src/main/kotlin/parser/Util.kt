@@ -4,6 +4,7 @@ import ast.Expression
 import ast.OperatorType
 import ast.operatorMapping
 import exception.EvaluationException
+import exception.GrammarException
 import interpreter.BooleanValue
 import interpreter.FunctionValue
 import interpreter.NilValue
@@ -42,10 +43,12 @@ fun validateGrammar(value: Boolean) {
     contract {
         returns() implies (value)
     }
-    require(value) { "Invalid grammar" }
+    if (!value) {
+        throwInvalidGrammar()
+    }
 }
 
-fun throwInvalidGrammar(): Unit = validateGrammar(false)
+fun throwInvalidGrammar(): Nothing = throw GrammarException("Invalid grammar")
 
 fun validateRuntime(value: Boolean, errorMessage: () -> String = { "Runtime exception" }) {
     contract {
