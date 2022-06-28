@@ -22,13 +22,14 @@ val expressionRule = Rule { ctx ->
 private val parenthesizedRule: Rule =
     andRule(leftParenRule, expressionRule, rightParenRule) { it[1] }
 
-// primary -> NUMBER | STRING | "true" | "false" | "nil" | parenthesized | identifier
+// primary -> NUMBER | STRING | "true" | "false" | "nil" | "this" | parenthesized | identifier
 val primaryExpressionRule = orRule(
     numberLiteralRule,
     stringLiteralRule,
     trueRule,
     falseRule,
     nilRule,
+    thisKeywordRule,
     parenthesizedRule,
     identifierRule
 )

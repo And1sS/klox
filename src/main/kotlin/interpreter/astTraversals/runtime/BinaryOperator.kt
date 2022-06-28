@@ -5,7 +5,9 @@ import ast.OperatorType
 import exception.EvaluationException
 import interpreter.BooleanValue
 import interpreter.Environment
+import interpreter.NilValue
 import interpreter.NumericValue
+import interpreter.ObjectValue
 import interpreter.StringValue
 import interpreter.Value
 import parser.validateGrammar
@@ -16,21 +18,26 @@ fun evaluateBinaryOperatorExpression(
     expression: BinaryOperatorExpression,
     evaluationEnvironment: Environment
 ): Value {
-    val operatorType = expression.operatorType
-    if (operatorType in setOf(OperatorType.And, OperatorType.Or)) {
+    if (expression.operatorType in setOf(OperatorType.And, OperatorType.Or)) {
         return evaluateLogicalBinaryOperatorExpression(expression, evaluationEnvironment)
     }
 
     val lhs = evaluateExpression(expression.lhs, evaluationEnvironment)
     val rhs = evaluateExpression(expression.rhs, evaluationEnvironment)
+    val signature = BinaryOperatorSignature(expression.operatorType, lhs::class, rhs::class)
 
-    val signature = BinaryOperatorSignature(operatorType, lhs::class, rhs::class)
+    if (lhs is NilValue || rhs is NilValue) return evaluateBinaryOperatorOnNil(signature)
+
     return binaryOperatorEvaluators[signature]?.invoke(lhs, rhs)
-        ?: throw EvaluationException(
-            "Invalid evaluation: could not find binary operator "
-                    + "$operatorType for ${lhs::class} and ${rhs::class}"
-        )
+        ?: throwAbsentBinaryOperatorException(signature)
 }
+
+private fun throwAbsentBinaryOperatorException(
+    signature: BinaryOperatorSignature
+): Nothing = throw EvaluationException(
+    "Invalid evaluation: could not find binary operator "
+            + "${signature.operatorType} for ${signature.lhsType} and ${signature.rhsType}"
+)
 
 private fun evaluateLogicalBinaryOperatorExpression(
     expression: BinaryOperatorExpression,
@@ -39,21 +46,32 @@ private fun evaluateLogicalBinaryOperatorExpression(
     val lhsResult = evaluateExpression(expression.lhs, evaluationEnvironment)
     validateRuntimeBoolean(lhsResult)
 
-    return if (
-        (expression.operatorType == OperatorType.Or && lhsResult.value)
-        || (expression.operatorType == OperatorType.And && !lhsResult.value)
-    ) {
+    val shortCircuit = (expression.operatorType == OperatorType.Or && lhsResult.value)
+            || (expression.operatorType == OperatorType.And && !lhsResult.value)
+
+    return if (shortCircuit) {
         lhsResult
     } else {
-        val rhsResult = evaluateExpression(expression.rhs, evaluationEnvironment)
-        validateRuntimeBoolean(rhsResult)
-        rhsResult
+        evaluateExpression(expression.rhs, evaluationEnvironment)
+            .also(::validateRuntimeBoolean)
     }
 }
 
+private fun evaluateBinaryOperatorOnNil(
+    signature: BinaryOperatorSignature
+): Value = when (signature.operatorType) {
+    OperatorType.EqualEqual -> BooleanValue(signature.lhsType == signature.rhsType)
+    OperatorType.BangEqual -> BooleanValue(signature.lhsType != signature.rhsType)
+    else -> throwAbsentBinaryOperatorException(signature)
+}
+
 private typealias BinaryOperatorEvaluator = (Value, Value) -> Value
-private typealias BinaryOperatorSignature =
-        Triple<OperatorType, KClass<out Value>, KClass<out Value>>
+
+data class BinaryOperatorSignature(
+    val operatorType: OperatorType,
+    val lhsType: KClass<out Value>,
+    val rhsType: KClass<out Value>
+)
 
 private inline fun <reified L : Value, reified R : Value> binaryOperatorEvaluator(
     crossinline evaluator: (L, R) -> Value
@@ -84,9 +102,15 @@ private val binaryOperatorEvaluators: Map<BinaryOperatorSignature, BinaryOperato
         numericalBinaryOperatorEvaluator(OperatorType.LessEqual, ::compareLessEqual),
         numericalBinaryOperatorEvaluator(OperatorType.Greater, ::compareGreater),
         numericalBinaryOperatorEvaluator(OperatorType.GreaterEqual, ::compareGreaterEqual),
-        numericalBinaryOperatorEvaluator(OperatorType.EqualEqual, ::compareEqual),
-        numericalBinaryOperatorEvaluator(OperatorType.BangEqual, ::compareNotEqual),
-        sameTypeBinaryOperatorEvaluator(OperatorType.Plus, ::concatenate)
+        sameTypeBinaryOperatorEvaluator(OperatorType.EqualEqual, ::compareEqualBoolean),
+        sameTypeBinaryOperatorEvaluator(OperatorType.EqualEqual, ::compareEqualNumeric),
+        sameTypeBinaryOperatorEvaluator(OperatorType.EqualEqual, ::compareEqualString),
+        sameTypeBinaryOperatorEvaluator(OperatorType.EqualEqual, ::compareEqualObject),
+        sameTypeBinaryOperatorEvaluator(OperatorType.BangEqual, ::compareNotEqualBoolean),
+        sameTypeBinaryOperatorEvaluator(OperatorType.BangEqual, ::compareNotEqualNumeric),
+        sameTypeBinaryOperatorEvaluator(OperatorType.BangEqual, ::compareNotEqualString),
+        sameTypeBinaryOperatorEvaluator(OperatorType.BangEqual, ::compareNotEqualObject),
+        sameTypeBinaryOperatorEvaluator(OperatorType.Plus, ::concatenate),
     )
 
 private fun add(lhs: NumericValue, rhs: NumericValue): Value =
@@ -116,8 +140,26 @@ private fun compareGreater(lhs: NumericValue, rhs: NumericValue): Value =
 private fun compareGreaterEqual(lhs: NumericValue, rhs: NumericValue): Value =
     BooleanValue(lhs.value >= rhs.value)
 
-private fun compareEqual(lhs: NumericValue, rhs: NumericValue): Value =
+private fun compareEqualBoolean(lhs: BooleanValue, rhs: BooleanValue): Value =
     BooleanValue(lhs.value == rhs.value)
 
-private fun compareNotEqual(lhs: NumericValue, rhs: NumericValue): Value =
+private fun compareEqualNumeric(lhs: NumericValue, rhs: NumericValue): Value =
+    BooleanValue(lhs.value == rhs.value)
+
+private fun compareEqualString(lhs: StringValue, rhs: StringValue): Value =
+    BooleanValue(lhs.value == rhs.value)
+
+private fun compareEqualObject(lhs: ObjectValue, rhs: ObjectValue): Value =
+    BooleanValue(lhs == rhs)
+
+private fun compareNotEqualBoolean(lhs: BooleanValue, rhs: BooleanValue): Value =
     BooleanValue(lhs.value != rhs.value)
+
+private fun compareNotEqualNumeric(lhs: NumericValue, rhs: NumericValue): Value =
+    BooleanValue(lhs.value != rhs.value)
+
+private fun compareNotEqualString(lhs: StringValue, rhs: StringValue): Value =
+    BooleanValue(lhs.value != rhs.value)
+
+private fun compareNotEqualObject(lhs: ObjectValue, rhs: ObjectValue): Value =
+    BooleanValue(lhs != rhs)

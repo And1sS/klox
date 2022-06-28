@@ -5,6 +5,7 @@ import ast.BinaryOperatorExpression
 import ast.CallExpression
 import ast.Expression
 import ast.FieldAccessExpression
+import ast.IdentifierExpression
 import ast.LabelExpression
 import ast.Literal
 import ast.ResolvedIdentifierExpression
@@ -12,6 +13,7 @@ import ast.UnaryOperatorExpression
 import ast.UnresolvedIdentifierExpression
 import exception.EvaluationException
 import interpreter.Environment
+import parser.validateRuntime
 
 fun resolveExpression(expr: Expression, evaluationEnvironment: Environment): Expression =
     when (expr) {
@@ -37,10 +39,15 @@ private fun resolveFunctionCallExpression(
 private fun resolveAssignmentExpression(
     expr: AssignmentExpression,
     evaluationEnvironment: Environment
-): AssignmentExpression = AssignmentExpression(
-    label = resolveLabelExpression(expr.label, evaluationEnvironment),
-    expr = resolveExpression(expr.expr, evaluationEnvironment)
-)
+): AssignmentExpression {
+    validateRuntime(expr.label !is IdentifierExpression || expr.label.name != "this") {
+        "Cannot assign to 'this'"
+    }
+    return AssignmentExpression(
+        label = resolveLabelExpression(expr.label, evaluationEnvironment),
+        expr = resolveExpression(expr.expr, evaluationEnvironment)
+    )
+}
 
 private fun resolveLabelExpression(
     expr: LabelExpression,

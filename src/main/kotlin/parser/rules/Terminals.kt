@@ -39,6 +39,7 @@ import lexer.SemicolonLexerToken
 import lexer.SlashLexerToken
 import lexer.StarLexerToken
 import lexer.StringLiteralLexerToken
+import lexer.ThisLexerToken
 import lexer.TrueLexerToken
 import lexer.VarLexerToken
 import lexer.WhileLexerToken
@@ -66,6 +67,8 @@ val printKeywordRule: Rule = symbolicTokenRule<PrintLexerToken>()
 val trueRule: Rule = nodeTokenRule<TrueLexerToken> { BooleanLiteral(true) }
 val falseRule: Rule = nodeTokenRule<FalseLexerToken> { BooleanLiteral(false) }
 val nilRule: Rule = nodeTokenRule<NilLexerToken> { NilLiteral }
+val thisKeywordRule: Rule =
+    nodeTokenRule<ThisLexerToken> { UnresolvedIdentifierExpression("this") }
 
 val commaRule: Rule = symbolicTokenRule<CommaLexerToken>()
 val semicolonRule: Rule = symbolicTokenRule<SemicolonLexerToken>()

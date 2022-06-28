@@ -80,6 +80,7 @@ private fun evaluateConstructorCall(
     arguments: List<Value>
 ): Value {
     val objectEnvironment = Environment(klass.capturedEnvironment)
+    val objectValue = ObjectValue(klass, objectEnvironment)
 
     for (field in klass.fields) {
         // declare all fields with NilValue
@@ -90,6 +91,8 @@ private fun evaluateConstructorCall(
     for (method in klass.methods) {
         executeDeclaration(method, objectEnvironment)
     }
+
+    objectEnvironment.createVariable("this", objectValue)
 
     for (field in klass.fields) {
         objectEnvironment.assignVariable(
@@ -107,7 +110,7 @@ private fun evaluateConstructorCall(
     )
     evaluateFunctionCall(boundConstructor, arguments)
 
-    return ObjectValue(klass, objectEnvironment)
+    return objectValue
 }
 
 private fun evaluateLoxFunctionCall(
@@ -155,20 +158,20 @@ private fun assignField(
     value: Value,
     evaluationEnvironment: Environment
 ): Unit = accessField(expr, evaluationEnvironment) {
-    it.objectEnvironment.assignVariable(ResolvedIdentifierExpression(expr.memberName, 0), value)
+    assignVariable(ResolvedIdentifierExpression(expr.memberName, 0), value)
 }
 
 private fun evaluateFieldAccessExpression(
     expr: FieldAccessExpression,
     evaluationEnvironment: Environment
 ): Value = accessField(expr, evaluationEnvironment) {
-    it.objectEnvironment.getVariableValue(ResolvedIdentifierExpression(expr.memberName, 0))
+    getVariableValue(ResolvedIdentifierExpression(expr.memberName, 0))
 }
 
 private inline fun <reified T> accessField(
     expr: FieldAccessExpression,
     evaluationEnvironment: Environment,
-    block: (objectValue: ObjectValue) -> T
+    block: Environment.() -> T
 ): T {
     val objectValue = evaluateExpression(expr.lhs, evaluationEnvironment)
     val errorMessage = "Can't access field ${expr.memberName} of $objectValue"
@@ -176,7 +179,7 @@ private inline fun <reified T> accessField(
     validateRuntime(objectValue is ObjectValue) { errorMessage }
 
     try {
-        return block(objectValue)
+        return objectValue.objectEnvironment.block()
     } catch (_: EvaluationException) {
         throw EvaluationException(errorMessage)
     }

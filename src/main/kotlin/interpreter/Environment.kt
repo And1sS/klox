@@ -8,6 +8,10 @@ import exception.SemanticError
 class Environment(private val parentEnvironment: Environment? = null) {
     private val variables: MutableMap<String, Value> = mutableMapOf()
 
+    fun declareVariable(name: String) {
+        createVariable(name, NilValue)
+    }
+
     fun createVariable(name: String, value: Value) {
         if (name in variables)
             throw SemanticError("Redeclaration of variable: $name")

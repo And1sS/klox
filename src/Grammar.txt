@@ -32,5 +32,5 @@ unaryOperator -> ( "!" | "-" ) unaryOperator | call
 call -> primary ( "(" arguments? ")" | "." identifier )*
 arguments -> expression ( "," expression )*
 
-primary -> NUMBER | STRING | "true" | "false" | "nil" | parenthesized | identifier
+primary -> NUMBER | STRING | "true" | "false" | "nil" | "this" | parenthesized | identifier
 parenthesized -> "(" expression ")"

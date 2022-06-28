@@ -33,8 +33,7 @@ private fun resolveVarDeclaration(
     val initializationExpression = declaration.initializationExpression?.let {
         resolveExpression(it, evaluationEnvironment)
     }
-
-    evaluationEnvironment.createVariable(declaration.name, NilValue)
+    evaluationEnvironment.declareVariable(declaration.name)
 
     return VarDeclaration(declaration.name, initializationExpression)
 }
@@ -45,11 +44,9 @@ private fun resolveFunctionDeclaration(
 ): FunctionDeclaration {
     val functionEnvironment = Environment(evaluationEnvironment)
 
-    for (arg in function.argNames) {
-        functionEnvironment.createVariable(arg, NilValue)
-    }
+    function.argNames.forEach(functionEnvironment::declareVariable)
 
-    evaluationEnvironment.createVariable(function.name, NilValue)
+    evaluationEnvironment.declareVariable(function.name)
     val body = resolveBlockStatement(function.body, functionEnvironment)
 
     return FunctionDeclaration(function.name, function.argNames, body)
@@ -114,18 +111,19 @@ private fun resolveForStatement(
     statement: ForStatement,
     evaluationEnvironment: Environment
 ): ForStatement {
-    val condition = statement.condition?.let { resolveExpression(it, evaluationEnvironment) }
-    val increment = statement.increment?.let { resolveExpression(it, evaluationEnvironment) }
-    val body = resolveStatement(statement.body, evaluationEnvironment)
-
+    val forEnvironment = Environment(evaluationEnvironment)
     return when (statement.initializer) {
         is VarDeclaration -> ForStatement(
-            initializer = resolveVarDeclaration(statement.initializer, evaluationEnvironment),
-            condition, increment, body
+            initializer = resolveVarDeclaration(statement.initializer, forEnvironment),
+            condition = statement.condition?.let { resolveExpression(it, forEnvironment) },
+            increment = statement.increment?.let { resolveExpression(it, forEnvironment) },
+            body = resolveStatement(statement.body, forEnvironment)
         )
         is ExpressionStatement -> ForStatement(
-            initializer = resolveExpressionStatement(statement.initializer, evaluationEnvironment),
-            condition, increment, body
+            initializer = resolveExpressionStatement(statement.initializer, forEnvironment),
+            condition = statement.condition?.let { resolveExpression(it, forEnvironment) },
+            increment = statement.increment?.let { resolveExpression(it, forEnvironment) },
+            body = resolveStatement(statement.body, forEnvironment)
         )
         // TODO: add unreachable exception
         else -> throw SemanticError("This branch shouldn't have been reached")

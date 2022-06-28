@@ -2,6 +2,7 @@ package interpreter.astTraversals.semantic
 
 import ast.BlockStatement
 import ast.ClassDeclaration
+import ast.EntityDeclaration
 import ast.FunctionDeclaration
 import ast.VarDeclaration
 import exception.SemanticError
@@ -14,16 +15,18 @@ fun resolveClassDeclaration(
 ): ClassDeclaration {
     val objectEnvironment = Environment(evaluationEnvironment)
 
-    evaluationEnvironment.createVariable(klass.name, NilValue)
+    evaluationEnvironment.declareVariable(klass.name)
 
     if (klass.constructors.size > 1)
         throw SemanticError("More than one constructor declared in class ${klass.name}")
     val constructor: FunctionDeclaration = klass.constructors.firstOrNull()
         ?: FunctionDeclaration(klass.name, emptyList(), BlockStatement(emptyList()))
 
-    for (member in klass.fields + klass.methods) {
-        objectEnvironment.createVariable(member.name, NilValue) // TODO: add Environment.declareVariable()
-    }
+    (klass.fields + klass.methods)
+        .map(EntityDeclaration::name)
+        .forEach(objectEnvironment::declareVariable)
+
+    objectEnvironment.declareVariable("this")
 
     return ClassDeclaration(
         name = klass.name,
@@ -47,9 +50,7 @@ private fun resolveMethod(
 ): FunctionDeclaration {
     val functionEnvironment = Environment(objectEnvironment)
 
-    for (arg in method.argNames) {
-        functionEnvironment.createVariable(arg, NilValue)
-    }
+    method.argNames.forEach(functionEnvironment::declareVariable)
 
     return FunctionDeclaration(
         name = method.name,
