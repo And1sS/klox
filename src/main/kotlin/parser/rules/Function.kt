@@ -1,8 +1,9 @@
 package parser.rules
 
 import ast.BlockStatement
+import ast.CallExpression
 import ast.Expression
-import ast.FunctionCallExpression
+import ast.FieldAccessExpression
 import ast.FunctionDeclaration
 import ast.IdentifierExpression
 import ast.UnresolvedIdentifierExpression
@@ -14,10 +15,12 @@ import parser.andRule
 import parser.component6
 import parser.listRule
 import parser.optionalRule
+import parser.orRule
+import parser.throwInvalidGrammar
 import parser.validateGrammar
 import parser.zeroOrMoreRule
 
-// argumentsDeclaration -> identifier ( ","  identifier )
+// argumentsDeclaration -> identifier ( ","  identifier )*
 val argumentsDeclarationRule: Rule = listRule<UnresolvedIdentifierExpression>(identifierRule)
 
 // in case of default block statement throws NPE
@@ -52,25 +55,33 @@ val functionDeclarationRule: Rule =
 // arguments -> expression ( "," expression )*
 private val argumentsRule: Rule = listRule<Expression>(expressionRule)
 
-// call -> primary ( "(" arguments? ")" )*
+// call -> primary ( "(" arguments? ")" | "." identifier )*
 val callRule: Rule =
     andRule(
         primaryExpressionRule,
-        zeroOrMoreRule(andRule(leftParenRule, optionalRule(argumentsRule), rightParenRule))
+        zeroOrMoreRule(
+            orRule(
+                andRule(leftParenRule, optionalRule(argumentsRule), rightParenRule) { it[1] },
+                andRule(dotRule, identifierRule) { it[1] }
+            )
+        )
     ) combiner@{ tokens ->
-        val (functionToken, callsToken) = tokens
-        validateGrammar(functionToken is NodeToken && functionToken.node is Expression)
+        val (calleeToken, callsToken) = tokens
+        validateGrammar(calleeToken is NodeToken && calleeToken.node is Expression)
         validateGrammar(callsToken is CompositeToken)
 
-        var processed: Expression = functionToken.node
+        var processed: Expression = calleeToken.node
 
-        callsToken.tokens
-            .chunked(3)
-            .forEach { call ->
-                val (_, optionalArgumentsToken, _) = call
-                validateGrammar(optionalArgumentsToken is OptionalToken)
-                processed = FunctionCallExpression(processed, optionalArgumentsToken.asExpressionList())
+        for (call in callsToken.tokens) {
+            processed = when (call) {
+                is OptionalToken -> CallExpression(processed, call.asExpressionList())
+                is NodeToken -> {
+                    validateGrammar(call.node is IdentifierExpression)
+                    FieldAccessExpression(processed, call.node.name)
+                }
+                else -> throwInvalidGrammar()
             }
+        }
 
         NodeToken(processed)
     }

@@ -3,24 +3,23 @@ import interpreter.interpret
 fun main() {
     // TODO: add error synchronization
     val program = """
-            fun returnFun() {
-                var a = 1;
-                fun f() {
-                    a = a + 1;
-                    print a;
-                }
-                //var a = 1;
-                return f;
-            }
+        //var x = 1;
+        class A {
+            var y = b();
+            var x = 2;
 
-            var a = 2;
-            var f = returnFun();
-            f();
-            f();
-            f();
-            f();
-            f();
-            f();
+            fun A() {
+                print y;
+                print "constructor";
+                b();
+            }
+            
+            fun b() {
+                return x;
+            }
+        }
+
+        var a = A();
             """
     interpret(program)
 }

@@ -1,6 +1,8 @@
 package interpreter
 
 import ast.BlockStatement
+import ast.FunctionDeclaration
+import ast.VarDeclaration
 
 sealed class Value
 
@@ -12,8 +14,19 @@ data class NumericValue(val value: Double) : Value()
 
 data class StringValue(val value: String) : Value()
 
-// TODO: implement objects properly
-class ObjectValue : Value()
+// TODO: add default constructor if no constructor is present
+data class ObjectValue(
+    val loxClass: ClassValue,
+    val objectEnvironment: Environment
+) : Value()
+
+data class ClassValue(
+    val name: String,
+    val constructor: FunctionDeclaration,
+    val fields: List<VarDeclaration>,
+    val methods: List<FunctionDeclaration>,
+    val capturedEnvironment: Environment
+) : Value()
 
 // TODO: add lambda functions
 sealed class FunctionValue(val argNumber: Int) : Value()
@@ -21,7 +34,7 @@ sealed class FunctionValue(val argNumber: Int) : Value()
 data class LoxFunctionValue(
     val argNames: List<String>,
     val body: BlockStatement,
-    val capturingEnvironment: Environment
+    val capturedEnvironment: Environment
 ) : FunctionValue(argNames.size) {
     override fun toString(): String = "LoxFunctionValue(args = $argNames, body = $body)"
 }

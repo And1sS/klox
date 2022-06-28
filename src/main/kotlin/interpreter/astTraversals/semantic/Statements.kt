@@ -1,6 +1,7 @@
 package interpreter.astTraversals.semantic
 
 import ast.BlockStatement
+import ast.ClassDeclaration
 import ast.Declaration
 import ast.ExpressionStatement
 import ast.ForStatement
@@ -21,6 +22,7 @@ fun resolveDeclaration(
 ): Declaration = when (declaration) {
     is VarDeclaration -> resolveVarDeclaration(declaration, evaluationEnvironment)
     is FunctionDeclaration -> resolveFunctionDeclaration(declaration, evaluationEnvironment)
+    is ClassDeclaration -> resolveClassDeclaration(declaration, evaluationEnvironment)
     is Statement -> resolveStatement(declaration, evaluationEnvironment)
 }
 
@@ -31,26 +33,23 @@ private fun resolveVarDeclaration(
     val initializationExpression = declaration.initializationExpression?.let {
         resolveExpression(it, evaluationEnvironment)
     }
+    evaluationEnvironment.declareVariable(declaration.name)
 
-    evaluationEnvironment.createVariable(declaration.identifier, NilValue)
-
-    return VarDeclaration(declaration.identifier, initializationExpression)
+    return VarDeclaration(declaration.name, initializationExpression)
 }
 
 private fun resolveFunctionDeclaration(
-    declaration: FunctionDeclaration,
+    function: FunctionDeclaration,
     evaluationEnvironment: Environment
 ): FunctionDeclaration {
     val functionEnvironment = Environment(evaluationEnvironment)
 
-    for (arg in declaration.argNames) {
-        functionEnvironment.createVariable(arg, NilValue)
-    }
+    function.argNames.forEach(functionEnvironment::declareVariable)
 
-    val body = resolveBlockStatement(declaration.body, functionEnvironment)
-    evaluationEnvironment.createVariable(declaration.identifier, NilValue)
+    evaluationEnvironment.declareVariable(function.name)
+    val body = resolveBlockStatement(function.body, functionEnvironment)
 
-    return FunctionDeclaration(declaration.identifier, declaration.argNames, body)
+    return FunctionDeclaration(function.name, function.argNames, body)
 }
 
 private fun resolveStatement(
@@ -112,18 +111,19 @@ private fun resolveForStatement(
     statement: ForStatement,
     evaluationEnvironment: Environment
 ): ForStatement {
-    val condition = statement.condition?.let { resolveExpression(it, evaluationEnvironment) }
-    val increment = statement.increment?.let { resolveExpression(it, evaluationEnvironment) }
-    val body = resolveStatement(statement.body, evaluationEnvironment)
-
+    val forEnvironment = Environment(evaluationEnvironment)
     return when (statement.initializer) {
         is VarDeclaration -> ForStatement(
-            initializer = resolveVarDeclaration(statement.initializer, evaluationEnvironment),
-            condition, increment, body
+            initializer = resolveVarDeclaration(statement.initializer, forEnvironment),
+            condition = statement.condition?.let { resolveExpression(it, forEnvironment) },
+            increment = statement.increment?.let { resolveExpression(it, forEnvironment) },
+            body = resolveStatement(statement.body, forEnvironment)
         )
         is ExpressionStatement -> ForStatement(
-            initializer = resolveExpressionStatement(statement.initializer, evaluationEnvironment),
-            condition, increment, body
+            initializer = resolveExpressionStatement(statement.initializer, forEnvironment),
+            condition = statement.condition?.let { resolveExpression(it, forEnvironment) },
+            increment = statement.increment?.let { resolveExpression(it, forEnvironment) },
+            body = resolveStatement(statement.body, forEnvironment)
         )
         // TODO: add unreachable exception
         else -> throw SemanticError("This branch shouldn't have been reached")

@@ -1,0 +1,36 @@
+program -> declaration*
+
+declaration ->  statement | varDeclaration | functionDeclaration
+
+varDeclaration -> "var" identifier ( "=" expression )? ";"
+
+functionDeclaration -> "fun" identifier "(" argumentsDeclaration? ")" blockStatement
+argumentsDeclaration -> identifier ( ","  identifier )
+
+classDeclaration -> "class" identifier "{" classContents "}"
+classContents -> ( varDeclaration | functionDeclaration )*
+
+statement -> expressionStatement | printStatement | blockStatement | ifStatement | whileStatement | forStatement | returnStatement
+
+expressionStatement -> expression ";"
+printStatement -> "print" expression ";"
+blockStatement -> "{" declaration* "}"
+ifStatement -> "if" "(" expression ")" statement ( "else" statement )?
+whileStatement -> "while" "(" expression ")" statement
+forStatement -> "for" "(" ( varDeclaration | expressionStatement | ";" ) expression? ";" expression? ")" statement
+returnStatement -> return expression? ";"
+
+expression -> assignment
+assignment -> ( call "=" assignment ) | logicOr
+logicOr -> logicAnd ( "or" logicAnd )*
+logicAnd -> equality ( "and" equality )*
+equality -> comparison ( ( "!=" | "==" ) comparison )*
+comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )*
+term -> factor ( ( "-" | "+" ) factor )*
+factor -> unaryOperator ( ( "/" | "*" ) unaryOperator )*
+unaryOperator -> ( "!" | "-" ) unaryOperator | call
+call -> primary ( "(" arguments? ")" | "." identifier )*
+arguments -> expression ( "," expression )*
+
+primary -> NUMBER | STRING | "true" | "false" | "nil" | "this" | parenthesized | identifier
+parenthesized -> "(" expression ")"

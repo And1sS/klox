@@ -1,5 +1,7 @@
 package interpreter
 
+import ast.EntityDeclaration
+import ast.VarDeclaration
 import interpreter.astTraversals.runtime.executeDeclaration
 import interpreter.astTraversals.semantic.resolveDeclaration
 import lexer.tokenize
@@ -28,6 +30,12 @@ fun interpret(program: String) {
     validateGrammar(programToken is ProgramToken)
 
     val resolutionGlobalEnvironment = Environment().also(::importNativeFunctions)
+    programToken.declarations
+        .filterIsInstance<EntityDeclaration>()
+        .filterNot { it is VarDeclaration }
+        .map(EntityDeclaration::name)
+        .forEach(resolutionGlobalEnvironment::declareVariable)
+
     val resolvedDeclarations = programToken.declarations.map { declaration ->
         resolveDeclaration(declaration, resolutionGlobalEnvironment)
     }

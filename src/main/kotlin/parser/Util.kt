@@ -4,6 +4,7 @@ import ast.Expression
 import ast.OperatorType
 import ast.operatorMapping
 import exception.EvaluationException
+import exception.GrammarException
 import interpreter.BooleanValue
 import interpreter.FunctionValue
 import interpreter.NilValue
@@ -28,8 +29,9 @@ fun Value.asString(): String = when (this) {
     is BooleanValue -> value.toString()
     is NumericValue -> value.toString()
     is StringValue -> value
-    is ObjectValue -> toString()
     is FunctionValue -> toString()
+    is ObjectValue -> toString()
+    is interpreter.ClassValue -> toString() // TODO: fix
 }
 
 // To enhance list destructuring capabilities
@@ -41,17 +43,19 @@ fun validateGrammar(value: Boolean) {
     contract {
         returns() implies (value)
     }
-    require(value) { "Invalid grammar" }
+    if (!value) {
+        throwInvalidGrammar()
+    }
 }
 
-fun throwInvalidGrammar(): Unit = validateGrammar(false)
+fun throwInvalidGrammar(): Nothing = throw GrammarException("Invalid grammar")
 
 fun validateRuntime(value: Boolean, errorMessage: () -> String = { "Runtime exception" }) {
     contract {
         returns() implies (value)
     }
     if (!value) {
-        throw EvaluationException(errorMessage.let { it() })
+        throw EvaluationException(errorMessage())
     }
 }
 

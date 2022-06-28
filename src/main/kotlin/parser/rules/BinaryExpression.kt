@@ -1,5 +1,7 @@
 package parser.rules
 
+import ast.BinaryOperatorExpression
+import ast.Expression
 import parser.Combiner
 import parser.CompositeToken
 import parser.MatchResult
@@ -8,17 +10,21 @@ import parser.NodeToken
 import parser.Rule
 import parser.Unmatched
 import parser.andRule
-import ast.BinaryOperatorExpression
-import ast.Expression
 import parser.toOperatorTypeAndOperand
 import parser.validateGrammar
 import parser.zeroOrMoreRule
 
+// TODO: think of rewriting to binaryOperator -> operand ( operator binaryOperator )?
+//  as it can eliminate combiner, for example: term -> factor ( ( "-" | "+" ) term )?
 // binaryOperator -> operand (operator operand)*
 fun binaryOperatorRule(operandRule: Rule, operatorRule: Rule): Rule =
     binaryOperatorRule(operandRule, operatorRule, defaultBinaryOperatorCombiner)
 
-fun binaryOperatorRule(operandRule: Rule, operatorRule: Rule, combiner: Combiner): Rule = Rule { ctx ->
+fun binaryOperatorRule(
+    operandRule: Rule,
+    operatorRule: Rule,
+    combiner: Combiner
+): Rule = Rule { ctx ->
     andRule(operandRule, zeroOrMoreRule(andRule(operatorRule, operandRule)))
         .match(ctx)
         .map { matched ->

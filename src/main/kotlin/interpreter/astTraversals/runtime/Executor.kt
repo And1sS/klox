@@ -1,6 +1,7 @@
 package interpreter.astTraversals.runtime
 
 import ast.BlockStatement
+import ast.ClassDeclaration
 import ast.Declaration
 import ast.ExpressionStatement
 import ast.ForStatement
@@ -37,29 +38,43 @@ fun executeDeclaration(
 ): ExecutionResult = when (declaration) {
     is VarDeclaration -> executeVarDeclaration(declaration, evaluationEnvironment)
     is FunctionDeclaration -> executeFunctionDeclaration(declaration, evaluationEnvironment)
+    is ClassDeclaration -> executeClassDeclaration(declaration, evaluationEnvironment)
     is Statement -> executeStatement(declaration, evaluationEnvironment)
 }
 
 private fun executeVarDeclaration(
-    declaration: VarDeclaration,
+    variable: VarDeclaration,
     evaluationEnvironment: Environment
 ): ExecutionResult {
-    val variableValue = declaration.initializationExpression?.let {
+    val variableValue = variable.initializationExpression?.let {
         evaluateExpression(it, evaluationEnvironment)
     } ?: NilValue
 
-    evaluationEnvironment.createVariable(declaration.identifier, variableValue)
+    evaluationEnvironment.createVariable(variable.name, variableValue)
 
     return ExecutionResult.Nothing
 }
 
 private fun executeFunctionDeclaration(
-    declaration: FunctionDeclaration,
+    function: FunctionDeclaration,
     evaluationEnvironment: Environment
 ): ExecutionResult =
-    LoxFunctionValue(declaration.argNames, declaration.body, evaluationEnvironment)
-        .also { function -> evaluationEnvironment.createVariable(declaration.identifier, function) }
+    LoxFunctionValue(function.argNames, function.body, evaluationEnvironment)
+        .also { evaluationEnvironment.createVariable(function.name, it) }
         .let { ExecutionResult.Nothing }
+
+private fun executeClassDeclaration(
+    klass: ClassDeclaration,
+    evaluationEnvironment: Environment
+): ExecutionResult = interpreter.ClassValue(
+    klass.name,
+    klass.constructors.first(),
+    klass.fields,
+    klass.methods,
+    evaluationEnvironment
+).also {
+    evaluationEnvironment.createVariable(klass.name, it)
+}.let { ExecutionResult.Nothing }
 
 private fun executeStatement(
     statement: Statement,

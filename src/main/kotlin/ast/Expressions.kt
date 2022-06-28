@@ -28,13 +28,24 @@ data class NumericLiteral(val value: Double) : Literal()
 
 data class StringLiteral(val value: String) : Literal()
 
-data class FunctionCallExpression(
+data class CallExpression(
     val function: Expression,
     val arguments: List<Expression>
 ) : Expression()
 
+sealed class LabelExpression : Expression()
+
+data class FieldAccessExpression(
+    val lhs: Expression,
+    val memberName: String
+) : LabelExpression()
+
+sealed class IdentifierExpression(val name: String) : LabelExpression()
+class UnresolvedIdentifierExpression(name: String) : IdentifierExpression(name)
+class ResolvedIdentifierExpression(name: String, val depth: Int) : IdentifierExpression(name)
+
 data class AssignmentExpression(
-    val identifier: IdentifierExpression,
+    val label: LabelExpression,
     val expr: Expression
 ) : Expression()
 
@@ -48,10 +59,6 @@ data class BinaryOperatorExpression(
     val lhs: Expression,
     val rhs: Expression
 ) : Expression()
-
-sealed class IdentifierExpression(val name: String) : Expression()
-class UnresolvedIdentifierExpression(name: String) : IdentifierExpression(name)
-class ResolvedIdentifierExpression(name: String, val depth: Int) : IdentifierExpression(name)
 
 enum class OperatorType {
     Bang,
